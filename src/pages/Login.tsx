@@ -58,17 +58,24 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-center">
-          <a href="#" className="text-sm text-primary hover:underline">
+          <button
+            type="button"
+            onClick={() => navigate('/forgot-password')}
+            className="text-sm text-primary hover:underline"
+          >
             ¿Olvidaste tu contraseña?
-          </a>
+          </button>
         </div>
 
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
             ¿No tienes cuenta?{' '}
-            <a href="#" className="text-primary hover:underline">
+            <button
+              onClick={() => navigate('/register')}
+              className="text-primary hover:underline font-semibold"
+            >
               Regístrate ahora
-            </a>
+            </button>
           </p>
         </div>
       </div>

@@ -1,10 +1,25 @@
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Moon, Sun } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Settings = () => {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const handleDeleteAccount = () => {
+    toast({
+      title: "Cuenta eliminada",
+      description: "Tu cuenta ha sido eliminada permanentemente",
+      variant: "destructive",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -12,6 +27,29 @@ const Settings = () => {
         <h1 className="text-4xl font-bold mb-8 animate-fade-in">Configuración</h1>
 
         <div className="space-y-6">
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <CardTitle>Apariencia</CardTitle>
+              <CardDescription>Personaliza la apariencia de la aplicación</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                  <div>
+                    <Label>Tema Oscuro</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Cambia entre tema claro y oscuro
+                    </p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={isDarkMode} 
+                  onCheckedChange={setIsDarkMode}
+                />
+              </div>
+            </CardContent>
+          </Card>
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Preferencias de Reproducción</CardTitle>
@@ -139,6 +177,48 @@ const Settings = () => {
                   </p>
                 </div>
                 <Switch />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-destructive">Zona de Peligro</CardTitle>
+              <CardDescription>Acciones irreversibles</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Eliminar Cuenta</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Una vez eliminada, no podrás recuperar tu cuenta ni tu historial de visualización.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        Eliminar mi cuenta
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta
+                          y removerá todos tus datos de nuestros servidores.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeleteAccount}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Sí, eliminar mi cuenta
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </CardContent>
           </Card>

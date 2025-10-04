@@ -162,3 +162,73 @@ export const mockInvoices = [
   { id: '2', date: '2023-12-01', amount: 'S/ 29.90', status: 'Pagado' },
   { id: '3', date: '2023-11-01', amount: 'S/ 29.90', status: 'Pagado' },
 ];
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  features: string[];
+  devices: number;
+  quality: string;
+}
+
+export const mockPlans: Plan[] = [
+  {
+    id: 'basic',
+    name: 'Básico',
+    price: 'S/ 19.90',
+    features: [
+      'Catálogo completo',
+      'Calidad HD (720p)',
+      '1 dispositivo simultáneo',
+      'Descargas limitadas',
+    ],
+    devices: 1,
+    quality: 'HD',
+  },
+  {
+    id: 'standard',
+    name: 'Estándar',
+    price: 'S/ 24.90',
+    features: [
+      'Catálogo completo',
+      'Calidad Full HD (1080p)',
+      '2 dispositivos simultáneos',
+      'Descargas ilimitadas',
+    ],
+    devices: 2,
+    quality: 'Full HD',
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: 'S/ 29.90',
+    features: [
+      'Catálogo completo',
+      'Calidad 4K Ultra HD',
+      '4 dispositivos simultáneos',
+      'Descargas ilimitadas',
+      'Audio espacial',
+    ],
+    devices: 4,
+    quality: '4K',
+  },
+];
+
+export const mockEPGDays = [
+  { date: '2024-01-15', day: 'Lunes' },
+  { date: '2024-01-16', day: 'Martes' },
+  { date: '2024-01-17', day: 'Miércoles' },
+  { date: '2024-01-18', day: 'Jueves' },
+  { date: '2024-01-19', day: 'Viernes' },
+  { date: '2024-01-20', day: 'Sábado' },
+  { date: '2024-01-21', day: 'Domingo' },
+];
+
+export const mockUsers = [
+  { id: '1', name: 'Juan Pérez', email: 'juan@example.com', plan: 'Premium', status: 'Activo', date: '2023-05-12' },
+  { id: '2', name: 'María García', email: 'maria@example.com', plan: 'Estándar', status: 'Activo', date: '2023-06-20' },
+  { id: '3', name: 'Carlos López', email: 'carlos@example.com', plan: 'Básico', status: 'Inactivo', date: '2023-03-15' },
+  { id: '4', name: 'Ana Rodríguez', email: 'ana@example.com', plan: 'Premium', status: 'Activo', date: '2023-08-01' },
+  { id: '5', name: 'Pedro Martínez', email: 'pedro@example.com', plan: 'Estándar', status: 'Activo', date: '2023-09-10' },
+];

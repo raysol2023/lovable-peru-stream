@@ -1,10 +1,34 @@
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockInvoices } from '@/data/mockData';
-import { CheckCircle, CreditCard } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { mockInvoices, mockPlans } from '@/data/mockData';
+import { CheckCircle, CreditCard, Check } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const Account = () => {
+  const [showChangePlan, setShowChangePlan] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState('premium');
+
+  const handleChangePlan = (planId: string) => {
+    setCurrentPlan(planId);
+    setShowChangePlan(false);
+    toast({
+      title: "Plan actualizado",
+      description: `Tu plan ha sido cambiado a ${mockPlans.find(p => p.id === planId)?.name}`,
+    });
+  };
+
+  const handleCancelSubscription = () => {
+    toast({
+      title: "Suscripción cancelada",
+      description: "Tu suscripción se cancelará al final del período de facturación",
+      variant: "destructive",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -48,8 +72,32 @@ const Account = () => {
               </div>
 
               <div className="flex gap-4">
-                <Button variant="secondary">Cambiar Plan</Button>
-                <Button variant="outline">Cancelar Suscripción</Button>
+                <Button 
+                  variant="secondary"
+                  onClick={() => setShowChangePlan(true)}
+                >
+                  Cambiar Plan
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline">Cancelar Suscripción</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Cancelar suscripción?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tu suscripción se mantendrá activa hasta el final del período de facturación actual.
+                        Después de eso, perderás acceso a todo el contenido.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Mantener suscripción</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleCancelSubscription}>
+                        Sí, cancelar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
@@ -97,6 +145,55 @@ const Account = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={showChangePlan} onOpenChange={setShowChangePlan}>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader>
+              <DialogTitle>Cambiar Plan</DialogTitle>
+            </DialogHeader>
+            <div className="grid md:grid-cols-3 gap-6 mt-4">
+              {mockPlans.map((plan) => (
+                <Card
+                  key={plan.id}
+                  className={`cursor-pointer transition-all hover:shadow-glow ${
+                    currentPlan === plan.id ? 'border-primary shadow-glow' : ''
+                  }`}
+                >
+                  <CardHeader>
+                    {currentPlan === plan.id && (
+                      <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold mb-2 w-fit">
+                        Plan Actual
+                      </div>
+                    )}
+                    <CardTitle>{plan.name}</CardTitle>
+                    <CardDescription>
+                      <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-muted-foreground"> / mes</span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 mb-6">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      className="w-full"
+                      variant={currentPlan === plan.id ? 'secondary' : 'default'}
+                      onClick={() => handleChangePlan(plan.id)}
+                      disabled={currentPlan === plan.id}
+                    >
+                      {currentPlan === plan.id ? 'Plan Actual' : 'Seleccionar'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
 import MovieCard from '@/components/MovieCard';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,22 @@ import { useNavigate } from 'react-router-dom';
 
 const Catalog = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   
   const filteredTitles = mockTitles.filter(title =>
-    title.title.toLowerCase().includes(searchQuery.toLowerCase())
+    title.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    title.genres.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const suggestions = useMemo(() => {
+    if (!searchQuery || searchQuery.length < 2) return [];
+    return mockTitles
+      .filter(title => 
+        title.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 5);
+  }, [searchQuery]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,14 +35,39 @@ const Catalog = () => {
           
           <div className="flex gap-4 max-w-2xl">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
               <Input
                 type="text"
-                placeholder="Buscar películas y series..."
+                placeholder="Buscar películas, series, géneros..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 className="pl-10"
               />
+              
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-glow z-20 overflow-hidden">
+                  {suggestions.map((title) => (
+                    <button
+                      key={title.id}
+                      onClick={() => {
+                        navigate(`/title/${title.id}`);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-secondary transition-colors flex items-center gap-3"
+                    >
+                      <Search className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{title.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {title.type === 'movie' ? 'Película' : 'Serie'} • {title.year}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <Button 
               variant="secondary"
@@ -50,11 +86,16 @@ const Catalog = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 animate-fade-in">
-            <p className="text-xl text-muted-foreground mb-4">
-              No se encontraron resultados para "{searchQuery}"
+          <div className="text-center py-16 animate-fade-in bg-card rounded-lg">
+            <div className="mb-6">
+              <Search className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">No encontramos "{searchQuery}"</h2>
+            <p className="text-muted-foreground mb-6">
+              ¿Te gustaría que lo agreguemos a nuestro catálogo?
             </p>
-            <Button onClick={() => navigate('/community')}>
+            <Button onClick={() => navigate('/community')} className="shadow-glow">
+              <MessageSquarePlus className="mr-2 h-5 w-5" />
               Solicitar en la Comunidad
             </Button>
           </div>

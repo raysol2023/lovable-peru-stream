@@ -1,6 +1,8 @@
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockStats, mockCommunityRequests } from '@/data/mockData';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { mockStats, mockCommunityRequests, mockUsers, mockTitles } from '@/data/mockData';
 import { Users, Film, TrendingUp, MessageSquare, DollarSign, Activity } from 'lucide-react';
 
 const Admin = () => {
@@ -67,61 +69,125 @@ const Admin = () => {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6">
           <Card className="animate-fade-in">
             <CardHeader>
-              <CardTitle>Solicitudes Recientes</CardTitle>
-              <CardDescription>Últimas solicitudes de la comunidad</CardDescription>
+              <CardTitle>Usuarios Registrados</CardTitle>
+              <CardDescription>Gestión de usuarios de la plataforma</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {mockCommunityRequests.slice(0, 5).map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-center justify-between p-3 bg-secondary rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{request.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {request.votes} votos
-                      </p>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs ${
-                      request.status === 'approved' ? 'bg-green-500/20 text-green-500' :
-                      request.status === 'rejected' ? 'bg-red-500/20 text-red-500' :
-                      'bg-yellow-500/20 text-yellow-500'
-                    }`}>
-                      {request.status === 'approved' ? 'Aprobado' :
-                       request.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha registro</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.plan}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.status === 'Activo' ? 'default' : 'secondary'}>
+                          {user.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{user.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
 
           <Card className="animate-fade-in">
             <CardHeader>
-              <CardTitle>Actividad Reciente</CardTitle>
-              <CardDescription>Últimas actividades en la plataforma</CardDescription>
+              <CardTitle>Catálogo de Contenido</CardTitle>
+              <CardDescription>Títulos disponibles en la plataforma</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[
-                  { action: 'Nuevo usuario registrado', time: 'Hace 5 minutos' },
-                  { action: 'Contenido agregado: Nueva Serie', time: 'Hace 1 hora' },
-                  { action: 'Solicitud aprobada: Breaking Bad', time: 'Hace 2 horas' },
-                  { action: 'Suscripción cancelada', time: 'Hace 3 horas' },
-                  { action: 'Nuevo contenido solicitado', time: 'Hace 4 horas' },
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-start justify-between p-3 bg-secondary rounded-lg">
-                    <p className="text-sm">{activity.action}</p>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                      {activity.time}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Año</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Géneros</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockTitles.map((title) => (
+                    <TableRow key={title.id}>
+                      <TableCell className="font-medium">{title.title}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {title.type === 'movie' ? 'Película' : 'Serie'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{title.year}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span className="text-yellow-500">★</span>
+                          <span>{title.rating}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {title.genres.join(', ')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <CardTitle>Solicitudes de Comunidad</CardTitle>
+              <CardDescription>Gestión de solicitudes de contenido</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Solicitado por</TableHead>
+                    <TableHead>Votos</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockCommunityRequests.map((request) => (
+                    <TableRow key={request.id}>
+                      <TableCell className="font-medium">{request.title}</TableCell>
+                      <TableCell>{request.requestedBy}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{request.votes} votos</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            request.status === 'approved' ? 'default' :
+                            request.status === 'rejected' ? 'destructive' : 
+                            'secondary'
+                          }
+                        >
+                          {request.status === 'approved' ? 'Aprobado' :
+                           request.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{request.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </div>
