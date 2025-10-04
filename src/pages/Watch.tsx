@@ -73,23 +73,33 @@ const Watch = () => {
 
   return (
     <div className="h-screen bg-black flex flex-col relative group">
+      {/* Floating Back Button - Always visible on mobile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate(-1)}
+        className="fixed top-4 left-4 z-50 text-white hover:bg-white/20 bg-black/50 backdrop-blur-sm md:hidden h-12 w-12 rounded-full"
+      >
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+
       <div 
-        className={`absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black to-transparent p-4 transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black to-transparent p-3 md:p-4 transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="text-white hover:bg-white/20"
+            className="hidden md:flex text-white hover:bg-white/20 h-10 w-10"
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-white">{title.title}</h1>
-            <p className="text-sm text-white/80">
+            <h1 className="text-lg md:text-2xl font-bold text-white line-clamp-1">{title.title}</h1>
+            <p className="text-xs md:text-sm text-white/80">
               {title.type === 'series' ? 'T1:E1 - ' : ''}{title.year} • {title.genres.join(', ')}
             </p>
           </div>
@@ -117,31 +127,31 @@ const Watch = () => {
       </div>
 
       {showNextEpisode && title.type === 'series' && (
-        <div className="absolute top-1/2 right-8 -translate-y-1/2 bg-card/95 backdrop-blur-sm rounded-lg p-4 w-80 shadow-glow animate-fade-in">
+        <div className="fixed bottom-20 md:bottom-auto md:top-1/2 md:right-8 md:-translate-y-1/2 left-4 right-4 md:left-auto md:w-80 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-glow animate-fade-in z-40">
           <p className="text-sm text-muted-foreground mb-2">Siguiente episodio</p>
           <h3 className="font-semibold mb-3">T1:E2 - El Secreto Revelado</h3>
           <Button 
-            className="w-full shadow-glow"
+            className="w-full shadow-glow h-12 text-base"
             onClick={() => navigate(`/watch/${id}`)}
           >
-            <Play className="h-4 w-4 mr-2" />
+            <Play className="h-5 w-5 mr-2" />
             Reproducir Ahora
           </Button>
         </div>
       )}
 
       <div 
-        className={`absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black to-transparent p-4 transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black via-black/80 to-transparent p-3 md:p-4 transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <div className="mb-4 group/progress">
+        <div className="mb-3 md:mb-4 group/progress">
           <Slider
             value={[currentTime]}
             max={duration}
             step={1}
             onValueChange={handleProgressChange}
-            className="cursor-pointer"
+            className="cursor-pointer h-2 md:h-auto"
           />
           <div className="flex justify-between text-xs text-white/60 mt-1">
             <span>{formatTime(currentTime)}</span>
@@ -149,25 +159,25 @@ const Watch = () => {
           </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
               onClick={() => setIsPlaying(!isPlaying)}
             >
               {isPlaying ? (
-                <Pause className="h-6 w-6" />
+                <Pause className="h-6 w-6 md:h-6 md:w-6" />
               ) : (
-                <Play className="h-6 w-6" />
+                <Play className="h-6 w-6 md:h-6 md:w-6" />
               )}
             </Button>
             
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
               onClick={() => handleSkip(-10)}
             >
               <SkipBack className="h-5 w-5" />
@@ -176,13 +186,13 @@ const Watch = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
               onClick={() => handleSkip(10)}
             >
               <SkipForward className="h-5 w-5" />
             </Button>
             
-            <div className="flex items-center gap-2 ml-2">
+            <div className="hidden sm:flex items-center gap-2 ml-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -195,7 +205,7 @@ const Watch = () => {
                   <Volume2 className="h-5 w-5" />
                 )}
               </Button>
-              <div className="w-24">
+              <div className="w-20 md:w-24">
                 <Slider
                   value={[isMuted ? 0 : volume]}
                   max={100}
@@ -209,11 +219,11 @@ const Watch = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="hidden sm:flex text-white hover:bg-white/20"
             >
               <Subtitles className="h-5 w-5" />
             </Button>
@@ -221,7 +231,7 @@ const Watch = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="hidden sm:flex text-white hover:bg-white/20"
             >
               <Settings className="h-5 w-5" />
             </Button>
@@ -229,7 +239,7 @@ const Watch = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
               onClick={() => document.documentElement.requestFullscreen()}
             >
               <Maximize className="h-5 w-5" />
