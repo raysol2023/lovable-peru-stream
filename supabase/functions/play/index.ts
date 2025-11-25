@@ -56,12 +56,9 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split('/');
-    const contentId = pathParts[pathParts.length - 1];
-    const { profile_id, device_id } = await req.json();
+    const { content_id, profile_id, device_id } = await req.json();
 
-    if (!contentId || !profile_id || !device_id) {
+    if (!content_id || !profile_id || !device_id) {
       return new Response(
         JSON.stringify({ error: 'content_id, profile_id and device_id are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -88,7 +85,7 @@ serve(async (req) => {
     const { data: content, error: contentError } = await supabaseClient
       .from('content')
       .select('*')
-      .eq('id', contentId)
+      .eq('id', content_id)
       .single();
 
     if (contentError || !content) {
@@ -178,7 +175,7 @@ serve(async (req) => {
         .from('active_streams')
         .update({ 
           last_heartbeat: new Date().toISOString(),
-          content_id: contentId,
+          content_id: content_id,
           profile_id: profile_id
         })
         .eq('id', existingDeviceStream.id);
@@ -189,7 +186,7 @@ serve(async (req) => {
         .insert({
           user_id: user.id,
           profile_id: profile_id,
-          content_id: contentId,
+          content_id: content_id,
           device_id: device_id,
         });
     }
@@ -198,7 +195,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         manifest_url: content.manifest_url,
-        content_id: contentId,
+        content_id: content_id,
         title: content.title,
         device_id: device_id,
         session_info: {
