@@ -36,6 +36,13 @@ serve(async (req) => {
   }
 
   try {
+    // Log incoming request details
+    console.log('Play function invoked:', {
+      method: req.method,
+      hasAuthHeader: !!req.headers.get('Authorization'),
+      authHeaderPrefix: req.headers.get('Authorization')?.substring(0, 20)
+    });
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -49,14 +56,27 @@ serve(async (req) => {
     // Get authenticated user
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
+    console.log('Auth check result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message
+    });
+    
     if (authError || !user) {
+      console.error('Authentication failed:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const { content_id, profile_id, device_id } = await req.json();
+    
+    console.log('Request body parsed:', {
+      content_id,
+      profile_id,
+      device_id
+    });
 
     if (!content_id || !profile_id || !device_id) {
       return new Response(
