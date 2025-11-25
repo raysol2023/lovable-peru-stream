@@ -14,6 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_streams: {
+        Row: {
+          content_id: string
+          device_id: string
+          id: string
+          last_heartbeat: string
+          profile_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          device_id: string
+          id?: string
+          last_heartbeat?: string
+          profile_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          device_id?: string
+          id?: string
+          last_heartbeat?: string
+          profile_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "active_streams_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "active_streams_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          content_description: string | null
+          content_details: Json | null
+          content_title: string
+          content_type: string | null
+          created_at: string
+          id: string
+          published_content_id: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["community_request_status"]
+          submission_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content_description?: string | null
+          content_details?: Json | null
+          content_title: string
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          published_content_id?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["community_request_status"]
+          submission_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content_description?: string | null
+          content_details?: Json | null
+          content_title?: string
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          published_content_id?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["community_request_status"]
+          submission_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_requests_published_content_id_fkey"
+            columns: ["published_content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content: {
         Row: {
           category: string[] | null
@@ -193,14 +297,48 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_stale_streams: { Args: never; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "staff" | "user"
+      community_request_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "published"
       plan_scope: "VOD" | "VOD_TV"
       subscription_status: "active" | "canceled" | "pending"
     }
@@ -330,6 +468,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "staff", "user"],
+      community_request_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "published",
+      ],
       plan_scope: ["VOD", "VOD_TV"],
       subscription_status: ["active", "canceled", "pending"],
     },
