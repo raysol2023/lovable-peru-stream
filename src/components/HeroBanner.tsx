@@ -1,19 +1,29 @@
 import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Title } from '@/data/mockData';
+import { Content } from '@/types/content';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroBannerProps {
-  title: Title;
+  title?: Content;
 }
 
-const HeroBanner = ({ title }: HeroBannerProps) => {
+export function HeroBanner({ title }: HeroBannerProps) {
   const navigate = useNavigate();
+
+  if (!title) {
+    return (
+      <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] w-full overflow-hidden bg-gradient-to-b from-background to-muted">
+        <div className="relative h-full flex items-center justify-center">
+          <p className="text-muted-foreground">Cargando contenido destacado...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] w-full overflow-hidden">
       <img 
-        src={title.banner || title.thumbnail}
+        src={title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728'}
         alt={title.title}
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -27,14 +37,21 @@ const HeroBanner = ({ title }: HeroBannerProps) => {
           </h1>
           
           <div className="flex items-center gap-2 sm:gap-4 mb-3 md:mb-4 text-xs sm:text-sm animate-fade-in">
-            <span className="text-primary font-semibold">⭐ {title.rating}</span>
-            <span>{title.year}</span>
-            <span className="hidden sm:inline">{title.type === 'movie' ? title.duration : `${title.seasons} Temporadas`}</span>
+            {title.category && title.category.length > 0 && (
+              <span>{title.category.join(' • ')}</span>
+            )}
+            {title.is_tv && (
+              <span className="px-2 py-1 border border-muted-foreground rounded">
+                En Vivo
+              </span>
+            )}
           </div>
           
-          <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-6 text-foreground/90 line-clamp-2 sm:line-clamp-3 animate-fade-in">
-            {title.synopsis}
-          </p>
+          {title.description && (
+            <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-6 text-foreground/90 line-clamp-2 sm:line-clamp-3 animate-fade-in">
+              {title.description}
+            </p>
+          )}
           
           <div className="flex gap-3 sm:gap-4 animate-fade-in">
             <Button 
@@ -60,6 +77,6 @@ const HeroBanner = ({ title }: HeroBannerProps) => {
       </div>
     </div>
   );
-};
+}
 
 export default HeroBanner;

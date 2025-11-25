@@ -1,254 +1,121 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward, Settings, Subtitles } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useRef, useEffect } from 'react';
-import { mockTitles } from '@/data/mockData';
-import { Slider } from '@/components/ui/slider';
+import { useContentById } from '@/hooks/useContent';
+import { usePlaybackSession } from '@/hooks/usePlaybackSession';
+import { useActiveProfile } from '@/hooks/useActiveProfile';
+import { VideoPlayer } from '@/components/VideoPlayer';
+import { PlaybackErrorDialog } from '@/components/PlaybackErrorDialog';
 
-const Watch = () => {
+export default function Watch() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration] = useState(6320); // 1:45:20 in seconds
-  const [volume, setVolume] = useState(100);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const [showNextEpisode, setShowNextEpisode] = useState(false);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-  
-  const title = mockTitles.find(t => t.id === id);
+  const { profileId } = useActiveProfile();
+  const { data: content, isLoading: contentLoading } = useContentById(id || '');
+  const { startPlayback, sendHeartbeat, loading, error } = usePlaybackSession();
+  const [manifestUrl, setManifestUrl] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
 
+  // Start playback session
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setCurrentTime(prev => {
-          if (prev >= duration - 30) {
-            setShowNextEpisode(true);
-          }
-          return prev < duration ? prev + 1 : duration;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, duration]);
+    if (!id || !profileId || !content) return;
 
-  useEffect(() => {
-    const handleMouseMove = () => {
-      setShowControls(true);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
+    const initPlayback = async () => {
+      const session = await startPlayback(id, profileId);
+      if (session) {
+        setManifestUrl(session.manifest_url);
+      } else {
+        setShowError(true);
       }
-      controlsTimeoutRef.current = setTimeout(() => {
-        if (isPlaying) setShowControls(false);
-      }, 3000);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-    };
-  }, [isPlaying]);
+    initPlayback();
+  }, [id, profileId, content]);
 
-  if (!title) {
-    return <div>Título no encontrado</div>;
+  // Heartbeat every 2 minutes
+  useEffect(() => {
+    if (!id || !profileId || !manifestUrl) return;
+
+    const interval = setInterval(() => {
+      sendHeartbeat(id, profileId);
+    }, 2 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [id, profileId, manifestUrl, sendHeartbeat]);
+
+  if (contentLoading || loading) {
+    return (
+      <div className="h-screen bg-black flex items-center justify-center">
+        <p className="text-white">Cargando contenido...</p>
+      </div>
+    );
   }
 
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleProgressChange = (value: number[]) => {
-    setCurrentTime(value[0]);
-  };
-
-  const handleSkip = (seconds: number) => {
-    setCurrentTime(prev => Math.max(0, Math.min(duration, prev + seconds)));
-  };
+  if (!content) {
+    return (
+      <div className="h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">Contenido no encontrado</p>
+          <Button onClick={() => navigate('/home')} variant="outline">
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-screen bg-black flex flex-col relative group">
-      {/* Floating Back Button - Always visible on mobile */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => navigate(-1)}
-        className="fixed top-4 left-4 z-50 text-white hover:bg-white/20 bg-black/50 backdrop-blur-sm md:hidden h-12 w-12 rounded-full"
-      >
-        <ArrowLeft className="h-6 w-6" />
-      </Button>
-
-      <div 
-        className={`absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black to-transparent p-3 md:p-4 transition-opacity duration-300 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="flex items-center gap-3 md:gap-4">
+    <>
+      <div className="relative h-screen bg-black overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center blur-sm opacity-30"
+          style={{ backgroundImage: `url(${content.cover_image_url})` }}
+        />
+        
+        {/* Back Button */}
+        <div className="absolute top-4 left-4 z-50">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="hidden md:flex text-white hover:bg-white/20 h-10 w-10"
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full"
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ChevronLeft className="h-6 w-6" />
           </Button>
-          <div>
-            <h1 className="text-lg md:text-2xl font-bold text-white line-clamp-1">{title.title}</h1>
-            <p className="text-xs md:text-sm text-white/80">
-              {title.type === 'series' ? 'T1:E1 - ' : ''}{title.year} • {title.genres.join(', ')}
-            </p>
-          </div>
         </div>
-      </div>
 
-      <div className="flex-1 flex items-center justify-center relative bg-black">
-        <img 
-          src={title.thumbnail}
-          alt={title.title}
-          className="max-h-full object-contain opacity-30 blur-sm"
-        />
-        
-        {!isPlaying && (
+        {/* Video Player */}
+        {manifestUrl ? (
+          <VideoPlayer 
+            manifestUrl={manifestUrl}
+            autoPlay={true}
+          />
+        ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Button
-              size="icon"
-              onClick={() => setIsPlaying(true)}
-              className="h-20 w-20 rounded-full shadow-glow hover:scale-110 transition-transform"
-            >
-              <Play className="h-10 w-10 ml-1" />
-            </Button>
+            <p className="text-white text-lg">Iniciando reproducción...</p>
           </div>
         )}
       </div>
 
-      {showNextEpisode && title.type === 'series' && (
-        <div className="fixed bottom-20 md:bottom-auto md:top-1/2 md:right-8 md:-translate-y-1/2 left-4 right-4 md:left-auto md:w-80 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-glow animate-fade-in z-40">
-          <p className="text-sm text-muted-foreground mb-2">Siguiente episodio</p>
-          <h3 className="font-semibold mb-3">T1:E2 - El Secreto Revelado</h3>
-          <Button 
-            className="w-full shadow-glow h-12 text-base"
-            onClick={() => navigate(`/watch/${id}`)}
-          >
-            <Play className="h-5 w-5 mr-2" />
-            Reproducir Ahora
-          </Button>
-        </div>
-      )}
-
-      <div 
-        className={`absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black via-black/80 to-transparent p-3 md:p-4 transition-opacity duration-300 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="mb-3 md:mb-4 group/progress">
-          <Slider
-            value={[currentTime]}
-            max={duration}
-            step={1}
-            onValueChange={handleProgressChange}
-            className="cursor-pointer h-2 md:h-auto"
-          />
-          <div className="flex justify-between text-xs text-white/60 mt-1">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 md:gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
-              {isPlaying ? (
-                <Pause className="h-6 w-6 md:h-6 md:w-6" />
-              ) : (
-                <Play className="h-6 w-6 md:h-6 md:w-6" />
-              )}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
-              onClick={() => handleSkip(-10)}
-            >
-              <SkipBack className="h-5 w-5" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
-              onClick={() => handleSkip(10)}
-            >
-              <SkipForward className="h-5 w-5" />
-            </Button>
-            
-            <div className="hidden sm:flex items-center gap-2 ml-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20"
-                onClick={() => setIsMuted(!isMuted)}
-              >
-                {isMuted || volume === 0 ? (
-                  <VolumeX className="h-5 w-5" />
-                ) : (
-                  <Volume2 className="h-5 w-5" />
-                )}
-              </Button>
-              <div className="w-20 md:w-24">
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  max={100}
-                  step={1}
-                  onValueChange={(val) => {
-                    setVolume(val[0]);
-                    setIsMuted(val[0] === 0);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 md:gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden sm:flex text-white hover:bg-white/20"
-            >
-              <Subtitles className="h-5 w-5" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden sm:flex text-white hover:bg-white/20"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 h-10 w-10 md:h-auto md:w-auto"
-              onClick={() => document.documentElement.requestFullscreen()}
-            >
-              <Maximize className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Error Dialog */}
+      <PlaybackErrorDialog 
+        error={showError ? error : null}
+        onClose={() => {
+          setShowError(false);
+          navigate('/home');
+        }}
+        onRetry={() => {
+          setShowError(false);
+          if (id && profileId) {
+            startPlayback(id, profileId).then(session => {
+              if (session) setManifestUrl(session.manifest_url);
+              else setShowError(true);
+            });
+          }
+        }}
+      />
+    </>
   );
-};
-
-export default Watch;
+}

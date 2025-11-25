@@ -1,28 +1,45 @@
-import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroBanner from '@/components/HeroBanner';
 import Carousel from '@/components/Carousel';
 import SkeletonCard from '@/components/SkeletonCard';
-import { mockTitles, mockCommunityRequests } from '@/data/mockData';
+import { useContent } from '@/hooks/useContent';
+import { ContentCarousel } from '@/types/content';
 
-const Home = () => {
-  const [isLoading, setIsLoading] = useState(true);
+export default function Home() {
+  const { data: content, isLoading } = useContent();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Organize content into carousels
+  const carousels: ContentCarousel[] = content ? [
+    { 
+      title: "Recomendados para Ti", 
+      category: "recommended", 
+      content: content.filter(c => c.category?.includes('Recomendados')).slice(0, 10) 
+    },
+    { 
+      title: "Tendencias Hoy", 
+      category: "trending", 
+      content: content.filter(c => c.category?.includes('Tendencias')).slice(0, 10) 
+    },
+    { 
+      title: "Acción", 
+      category: "action", 
+      content: content.filter(c => c.category?.includes('Acción')).slice(0, 10) 
+    },
+    { 
+      title: "Drama", 
+      category: "drama", 
+      content: content.filter(c => c.category?.includes('Drama')).slice(0, 10) 
+    },
+    {
+      title: "Todo el Contenido",
+      category: "all",
+      content: content.slice(0, 15)
+    }
+  ] : [];
 
-  const featuredTitle = mockTitles[0];
-  const trending = mockTitles.slice(0, 6);
-  const continueWatching = mockTitles.slice(1, 5);
-  const newReleases = mockTitles.slice(2, 6);
-  const recommended = mockTitles.slice(3, 9);
-  const communityTitles = mockTitles.filter((_, idx) => 
-    mockCommunityRequests.slice(0, 6).map((_, i) => i).includes(idx)
-  );
+  const featuredTitle = content?.[0];
 
-  if (isLoading) {
+  if (isLoading || !content) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -53,16 +70,17 @@ const Home = () => {
         <HeroBanner title={featuredTitle} />
         
         <div className="py-8">
-          <Carousel title="Continuar Viendo" titles={continueWatching} />
-          <Carousel title="Tendencias Hoy" titles={trending} />
-          <Carousel title="Recomendados para Ti" titles={recommended} />
-          <Carousel title="Nuevos Lanzamientos" titles={newReleases} />
-          <Carousel title="Solicitado por la Comunidad" titles={communityTitles} />
-          <Carousel title="Popular en Perú" titles={mockTitles} />
+          {carousels.map((carousel) => 
+            carousel.content.length > 0 && (
+              <Carousel 
+                key={carousel.category} 
+                title={carousel.title} 
+                titles={carousel.content} 
+              />
+            )
+          )}
         </div>
       </div>
     </div>
   );
-};
-
-export default Home;
+}

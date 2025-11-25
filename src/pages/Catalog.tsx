@@ -4,27 +4,29 @@ import MovieCard from '@/components/MovieCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus } from 'lucide-react';
-import { mockTitles } from '@/data/mockData';
+import { useContent } from '@/hooks/useContent';
 import { useNavigate } from 'react-router-dom';
 
-const Catalog = () => {
+export default function Catalog() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
+  const { data: content, isLoading } = useContent();
   
-  const filteredTitles = mockTitles.filter(title =>
-    title.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    title.genres.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredTitles = useMemo(() => {
+    if (!content) return [];
+    if (!searchQuery) return content;
+    
+    return content.filter(item =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category?.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [content, searchQuery]);
 
   const suggestions = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
-    return mockTitles
-      .filter(title => 
-        title.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .slice(0, 5);
-  }, [searchQuery]);
+    return filteredTitles.slice(0, 5);
+  }, [searchQuery, filteredTitles]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,20 +50,20 @@ const Catalog = () => {
               
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-glow z-20 overflow-hidden">
-                  {suggestions.map((title) => (
+                  {suggestions.map((item) => (
                     <button
-                      key={title.id}
+                      key={item.id}
                       onClick={() => {
-                        navigate(`/title/${title.id}`);
+                        navigate(`/title/${item.id}`);
                         setShowSuggestions(false);
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-secondary transition-colors flex items-center gap-3"
                     >
                       <Search className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">{title.title}</p>
+                        <p className="font-medium">{item.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {title.type === 'movie' ? 'Película' : 'Serie'} • {title.year}
+                          {item.is_tv ? 'TV en Vivo' : 'VOD'} • {item.category?.[0] || 'General'}
                         </p>
                       </div>
                     </button>
@@ -79,10 +81,14 @@ const Catalog = () => {
           </div>
         </div>
 
-        {filteredTitles.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Cargando catálogo...</p>
+          </div>
+        ) : filteredTitles.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 animate-fade-in">
-            {filteredTitles.map((title) => (
-              <MovieCard key={title.id} title={title} />
+            {filteredTitles.map((item) => (
+              <MovieCard key={item.id} title={item} />
             ))}
           </div>
         ) : (
@@ -103,6 +109,4 @@ const Catalog = () => {
       </div>
     </div>
   );
-};
-
-export default Catalog;
+}
