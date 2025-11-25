@@ -1,15 +1,15 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Title } from '@/data/mockData';
-import MovieCard from './MovieCard';
+import { Content } from '@/types/content';
+import { MovieCard } from './MovieCard';
 import { Button } from '@/components/ui/button';
 import { useRef } from 'react';
 
 interface CarouselProps {
   title: string;
-  titles: Title[];
+  titles: Content[];
 }
 
-const Carousel = ({ title, titles }: CarouselProps) => {
+export function Carousel({ title, titles }: CarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -21,6 +21,10 @@ const Carousel = ({ title, titles }: CarouselProps) => {
       });
     }
   };
+
+  if (!titles || titles.length === 0) {
+    return null;
+  }
 
   return (
     <div className="mb-6 md:mb-8 animate-fade-in">
@@ -40,9 +44,9 @@ const Carousel = ({ title, titles }: CarouselProps) => {
           className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 scroll-smooth snap-x snap-mandatory touch-pan-x"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {titles.map((title) => (
-            <div key={title.id} className="snap-start">
-              <MovieCard title={title} />
+          {titles.map((item) => (
+            <div key={item.id} className="snap-start">
+              <MovieCard title={item} />
             </div>
           ))}
         </div>
@@ -58,6 +62,6 @@ const Carousel = ({ title, titles }: CarouselProps) => {
       </div>
     </div>
   );
-};
+}
 
 export default Carousel;

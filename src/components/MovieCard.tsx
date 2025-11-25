@@ -1,12 +1,12 @@
 import { Play, Info } from 'lucide-react';
-import { Title } from '@/data/mockData';
+import { Content } from '@/types/content';
 import { useNavigate } from 'react-router-dom';
 
 interface MovieCardProps {
-  title: Title;
+  title: Content;
 }
 
-const MovieCard = ({ title }: MovieCardProps) => {
+export function MovieCard({ title }: MovieCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +20,7 @@ const MovieCard = ({ title }: MovieCardProps) => {
     >
       <div className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-glow transition-shadow duration-300">
         <img 
-          src={title.thumbnail} 
+          src={title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728'} 
           alt={title.title}
           className="w-full h-56 sm:h-64 md:h-72 object-cover transition-transform duration-300"
           loading="lazy"
@@ -50,11 +50,11 @@ const MovieCard = ({ title }: MovieCardProps) => {
       
       <div className="mt-2 px-1">
         <p className="text-xs text-muted-foreground truncate">
-          {title.year} • ⭐ {title.rating}
+          {title.category?.[0] || 'General'} {title.is_tv && '• En Vivo'}
         </p>
       </div>
     </div>
   );
-};
+}
 
 export default MovieCard;

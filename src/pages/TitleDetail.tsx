@@ -3,20 +3,43 @@ import Navbar from '@/components/Navbar';
 import Carousel from '@/components/Carousel';
 import { Button } from '@/components/ui/button';
 import { Play, Plus, ThumbsUp, Share2 } from 'lucide-react';
-import { mockTitles } from '@/data/mockData';
+import { useContentById } from '@/hooks/useContent';
+import { useContent } from '@/hooks/useContent';
 
-const TitleDetail = () => {
+export default function TitleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const title = mockTitles.find(t => t.id === id);
+  const { data: content, isLoading: contentLoading } = useContentById(id || '');
+  const { data: allContent } = useContent();
 
-  if (!title) {
-    return <div>Título no encontrado</div>;
+  if (contentLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 text-center">
+          <p className="text-muted-foreground">Cargando detalles...</p>
+        </div>
+      </div>
+    );
   }
 
-  const similarTitles = mockTitles.filter(t => 
-    t.id !== id && t.genres.some(g => title.genres.includes(g))
-  );
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 text-center">
+          <p className="text-xl mb-4">Contenido no encontrado</p>
+          <Button onClick={() => navigate('/home')}>Volver al inicio</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Find similar content based on categories
+  const similarContent = allContent?.filter(c => 
+    c.id !== id && 
+    c.category?.some(cat => content.category?.includes(cat))
+  ).slice(0, 10) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,8 +48,8 @@ const TitleDetail = () => {
       <div className="pt-16">
         <div className="relative h-[60vh] w-full overflow-hidden">
           <img 
-            src={title.banner || title.thumbnail}
-            alt={title.title}
+            src={content.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728'}
+            alt={content.title}
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 gradient-hero" />
@@ -34,30 +57,36 @@ const TitleDetail = () => {
 
         <div className="container mx-auto px-4 -mt-32 relative z-10">
           <div className="max-w-4xl animate-fade-in">
-            <h1 className="text-5xl font-bold mb-4 text-shadow">{title.title}</h1>
+            <h1 className="text-5xl font-bold mb-4 text-shadow">{content.title}</h1>
             
-            <div className="flex items-center gap-4 mb-6 text-sm">
-              <span className="text-primary font-semibold text-lg">{title.rating}/10</span>
-              <span>{title.year}</span>
-              <span>{title.type === 'movie' ? title.duration : `${title.seasons} Temporadas`}</span>
-              <div className="flex gap-2">
-                {title.genres.map(genre => (
-                  <span key={genre} className="bg-secondary px-3 py-1 rounded-full text-xs">
-                    {genre}
-                  </span>
-                ))}
-              </div>
+            <div className="flex items-center gap-4 mb-6 text-sm flex-wrap">
+              {content.category && content.category.length > 0 && (
+                <div className="flex gap-2">
+                  {content.category.map(cat => (
+                    <span key={cat} className="bg-secondary px-3 py-1 rounded-full text-xs">
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {content.is_tv && (
+                <span className="px-3 py-1 border border-muted-foreground rounded-full text-xs">
+                  En Vivo
+                </span>
+              )}
             </div>
 
-            <p className="text-lg mb-8 text-foreground/90">
-              {title.synopsis}
-            </p>
+            {content.description && (
+              <p className="text-lg mb-8 text-foreground/90">
+                {content.description}
+              </p>
+            )}
 
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-4 mb-8 flex-wrap">
               <Button 
                 size="lg"
                 className="shadow-glow"
-                onClick={() => navigate(`/watch/${title.id}`)}
+                onClick={() => navigate(`/watch/${content.id}`)}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Reproducir
@@ -76,12 +105,12 @@ const TitleDetail = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-12">
-          <Carousel title="Títulos Similares" titles={similarTitles} />
-        </div>
+        {similarContent.length > 0 && (
+          <div className="container mx-auto px-4 py-12">
+            <Carousel title="Contenido Similar" titles={similarContent} />
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-export default TitleDetail;
+}
