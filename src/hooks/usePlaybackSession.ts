@@ -14,8 +14,9 @@ export function usePlaybackSession() {
     try {
       const deviceId = getDeviceId();
       
-      const { data, error: invokeError } = await supabase.functions.invoke(`play/${contentId}`, {
+      const { data, error: invokeError } = await supabase.functions.invoke('play', {
         body: { 
+          content_id: contentId,
           profile_id: profileId,
           device_id: deviceId 
         }
@@ -45,8 +46,9 @@ export function usePlaybackSession() {
     try {
       const deviceId = getDeviceId();
       
-      await supabase.functions.invoke(`play/${contentId}`, {
+      await supabase.functions.invoke('play', {
         body: { 
+          content_id: contentId,
           profile_id: profileId,
           device_id: deviceId 
         }
