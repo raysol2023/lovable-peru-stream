@@ -23,3 +23,12 @@ verify_jwt = true
 
 [functions.community-approve]
 verify_jwt = true
+
+[functions.epg-importer]
+verify_jwt = false
+
+[functions.session-close-oldest]
+verify_jwt = true
+
+[functions.tiering-manager]
+verify_jwt = false
