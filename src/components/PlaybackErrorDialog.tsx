@@ -10,6 +10,7 @@ import {
 import { PlaybackError } from "@/types/playback";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlaybackErrorDialogProps {
   error: PlaybackError | null;
@@ -42,6 +43,25 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
           details: error.oldest_device ? `Dispositivo más antiguo: ${error.oldest_device}` : undefined,
           actions: (
             <>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                      await supabase.functions.invoke('session-close-oldest', {
+                        headers: { Authorization: `Bearer ${session.access_token}` }
+                      });
+                    }
+                    onClose();
+                    if (onRetry) onRetry();
+                  } catch (err) {
+                    console.error('Error closing oldest session:', err);
+                  }
+                }}
+              >
+                Cerrar Sesión Más Antigua
+              </Button>
               {onRetry && (
                 <Button variant="outline" onClick={() => { onClose(); onRetry(); }}>
                   Reintentar

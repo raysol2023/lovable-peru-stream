@@ -157,6 +157,56 @@ export type Database = {
         }
         Relationships: []
       }
+      epg_data: {
+        Row: {
+          channel_id: string
+          created_at: string
+          duration_minutes: number
+          end_time: string
+          genre: string | null
+          id: string
+          program_description: string | null
+          program_title: string
+          rating: string | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          duration_minutes: number
+          end_time: string
+          genre?: string | null
+          id?: string
+          program_description?: string | null
+          program_title: string
+          rating?: string | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          duration_minutes?: number
+          end_time?: string
+          genre?: string | null
+          id?: string
+          program_description?: string | null
+          program_title?: string
+          rating?: string | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "epg_data_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           created_at: string
