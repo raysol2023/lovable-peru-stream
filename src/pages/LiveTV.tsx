@@ -42,6 +42,12 @@ const LiveTV = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  const handlePlayChannel = () => {
+    if (selectedChannel) {
+      navigate(`/watch/${selectedChannel}`);
+    }
+  };
+
   const handlePlayProgram = (programId: string, fromStart: boolean = false) => {
     if (selectedChannel) {
       navigate(`/watch/${selectedChannel}${fromStart ? '?from_start=true' : ''}`);
@@ -108,21 +114,31 @@ const LiveTV = () => {
         <Dialog open={!!selectedChannel} onOpenChange={() => setSelectedChannel(null)}>
           <DialogContent className="max-w-full sm:max-w-4xl max-h-[80vh] overflow-y-auto mx-4">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-3">
-                {selectedChannelData?.cover_image_url && (
-                  <img 
-                    src={selectedChannelData.cover_image_url} 
-                    alt=""
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded object-cover"
-                  />
-                )}
-                <span className="text-lg sm:text-xl">
-                  {selectedChannelData?.title}
-                </span>
+              <DialogTitle className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {selectedChannelData?.cover_image_url && (
+                    <img 
+                      src={selectedChannelData.cover_image_url} 
+                      alt=""
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded object-cover"
+                    />
+                  )}
+                  <span className="text-lg sm:text-xl">
+                    {selectedChannelData?.title}
+                  </span>
+                </div>
+                <Button 
+                  onClick={handlePlayChannel}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <Play className="h-4 w-4" />
+                  Ver en Vivo
+                </Button>
               </DialogTitle>
             </DialogHeader>
             
-            <Tabs 
+            <Tabs
               value={selectedDate.toISOString()} 
               onValueChange={(value) => setSelectedDate(new Date(value))}
             >
