@@ -12,6 +12,24 @@ export function usePlaybackSession() {
     setError(null);
 
     try {
+      // Verify user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.error('No active session found');
+        setError({
+          error: 'Sesión expirada. Por favor, inicia sesión de nuevo.',
+          code: 'NO_SUBSCRIPTION'
+        });
+        return null;
+      }
+
+      console.log('Starting playback with session:', {
+        hasSession: !!session,
+        contentId,
+        profileId
+      });
+
       const deviceId = getDeviceId();
       
       const { data, error: invokeError } = await supabase.functions.invoke('play', {
@@ -21,6 +39,8 @@ export function usePlaybackSession() {
           device_id: deviceId 
         }
       });
+
+      console.log('Playback response:', { data, error: invokeError });
 
       if (invokeError) throw invokeError;
       
