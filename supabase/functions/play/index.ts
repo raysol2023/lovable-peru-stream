@@ -18,10 +18,15 @@ async function validateGeoIP(ip: string): Promise<boolean> {
     const response = await fetch(`https://ipapi.co/${ip}/json/`);
     const data = await response.json();
     
-    console.log('Geo-IP check:', { ip, country: data.country_code });
+    console.log('Geo-IP check:', { ip, country: data.country_code, fullData: data });
+    
+    // TEMPORAL: Bypass geo-blocking for debugging
+    console.log('⚠️ TEMPORAL: Geo-blocking bypassed for debugging');
+    return true;
     
     // Check if country is Peru (PE)
-    return data.country_code === 'PE';
+    // If country_code is undefined, fail-open (allow access)
+    // return data.country_code === 'PE' || !data.country_code;
   } catch (error) {
     console.error('Geo-IP validation error:', error);
     // In case of error, allow access (fail-open for better UX)
@@ -72,7 +77,7 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader);
     
-    console.log('Auth check result:', {
+    console.log('👤 LOG 1 - User ID:', {
       hasUser: !!user,
       userId: user?.id,
       authError: authError?.message
@@ -124,6 +129,14 @@ serve(async (req) => {
       .eq('id', content_id)
       .single();
 
+    console.log('🎬 LOG 3 - Content URL:', {
+      hasContent: !!content,
+      contentTitle: content?.title,
+      manifestUrl: content?.manifest_url,
+      isTV: content?.is_tv,
+      contentError: contentError?.message
+    });
+
     if (contentError || !content) {
       return new Response(
         JSON.stringify({ error: 'Content not found' }),
@@ -138,6 +151,15 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .eq('status', 'active')
       .single();
+
+    console.log('📋 LOG 2 - Subscription:', {
+      hasSubscription: !!subscription,
+      subscriptionStatus: subscription?.status,
+      planId: subscription?.plan_id,
+      planScope: (subscription?.plan as any)?.scope,
+      planName: (subscription?.plan as any)?.name,
+      fullSubscription: subscription
+    });
 
     if (!subscription) {
       return new Response(
