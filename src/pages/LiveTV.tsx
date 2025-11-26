@@ -1,22 +1,37 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Play, RotateCcw, Loader2 } from 'lucide-react';
+import { Clock, Play, RotateCcw, Loader2, Crown } from 'lucide-react';
 import { useLiveChannels } from '@/hooks/useLiveChannels';
 import { useEPG } from '@/hooks/useEPG';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 const LiveTV = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   const { data: channels, isLoading: channelsLoading } = useLiveChannels();
   const { data: epgData, isLoading: epgLoading } = useEPG(selectedChannel, selectedDate);
+  const { data: subscription } = useSubscription();
+
+  // Check if user has VOD-only plan
+  const hasVODOnlyPlan = subscription?.plan?.scope === 'VOD';
+
+  useEffect(() => {
+    // Block access if user has VOD-only plan
+    if (hasVODOnlyPlan && !showUpgradeDialog) {
+      setShowUpgradeDialog(true);
+    }
+  }, [hasVODOnlyPlan, showUpgradeDialog]);
 
   // Generate next 7 days for tabs
   const epgDays = useMemo(() => {
@@ -43,15 +58,39 @@ const LiveTV = () => {
   };
 
   const handlePlayChannel = () => {
+    if (hasVODOnlyPlan) {
+      setShowUpgradeDialog(true);
+      return;
+    }
     if (selectedChannel) {
       navigate(`/watch/${selectedChannel}`);
     }
   };
 
   const handlePlayProgram = (programId: string, fromStart: boolean = false) => {
+    if (hasVODOnlyPlan) {
+      setShowUpgradeDialog(true);
+      return;
+    }
     if (selectedChannel) {
       navigate(`/watch/${selectedChannel}${fromStart ? '?from_start=true' : ''}`);
     }
+  };
+
+  const handleChannelClick = (channelId: string) => {
+    if (hasVODOnlyPlan) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+    setSelectedChannel(channelId);
+  };
+
+  const handleUpgrade = () => {
+    navigate('/account');
+    toast({
+      title: "Actualiza tu plan",
+      description: "Elige un plan VOD + TV para disfrutar de TV en vivo",
+    });
   };
 
   if (channelsLoading) {
@@ -78,7 +117,7 @@ const LiveTV = () => {
             {channels.map((channel) => (
               <div
                 key={channel.id}
-                onClick={() => setSelectedChannel(channel.id)}
+                onClick={() => handleChannelClick(channel.id)}
                 className="bg-card rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-glow hover:scale-105 animate-fade-in group"
               >
                 <div className="aspect-video bg-secondary flex items-center justify-center overflow-hidden relative">
@@ -212,6 +251,51 @@ const LiveTV = () => {
                 </TabsContent>
               ))}
             </Tabs>
+          </DialogContent>
+        </Dialog>
+
+        {/* Upgrade Dialog */}
+        <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <Crown className="h-6 w-6 text-primary" />
+                Actualiza tu Plan
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-muted-foreground">
+                Para acceder a <strong>TV en Vivo</strong> necesitas un plan que incluya contenido VOD + TV.
+              </p>
+              <div className="bg-secondary/50 p-4 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium mb-2">Tu plan actual:</p>
+                <p className="text-lg font-bold">{subscription?.plan?.name || 'Plan VOD'}</p>
+                <p className="text-xs text-muted-foreground">Solo contenido bajo demanda</p>
+              </div>
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+                <p className="text-sm font-medium mb-2">Planes con TV en Vivo:</p>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  <li>• Plan C - VOD + TV</li>
+                  <li>• Plan D - VOD + TV Premium</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setShowUpgradeDialog(false)}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                className="flex-1 gap-2"
+                onClick={handleUpgrade}
+              >
+                <Crown className="h-4 w-4" />
+                Ver Planes
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

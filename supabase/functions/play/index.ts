@@ -43,6 +43,13 @@ serve(async (req) => {
       authHeaderPrefix: req.headers.get('Authorization')?.substring(0, 20)
     });
 
+    // Create Supabase client with service role for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
+    // Create client with user's auth token for RLS
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -53,8 +60,17 @@ serve(async (req) => {
       }
     );
 
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Get authenticated user using the JWT token
+    const authHeader = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!authHeader) {
+      console.error('No authorization token provided');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - No token provided' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader);
     
     console.log('Auth check result:', {
       hasUser: !!user,
@@ -116,7 +132,7 @@ serve(async (req) => {
     }
 
     // === 3. GET USER'S ACTIVE SUBSCRIPTION AND PLAN ===
-    const { data: subscription } = await supabaseClient
+    const { data: subscription } = await supabaseAdmin
       .from('subscriptions')
       .select('*, plan:plan_id(*)')
       .eq('user_id', user.id)
@@ -152,10 +168,10 @@ serve(async (req) => {
 
     // === 5. CONCURRENCY VALIDATION ===
     // Clean up stale streams first
-    await supabaseClient.rpc('cleanup_stale_streams');
+    await supabaseAdmin.rpc('cleanup_stale_streams');
 
     // Get current active streams for this user
-    const { data: activeStreams, error: streamsError } = await supabaseClient
+    const { data: activeStreams, error: streamsError } = await supabaseAdmin
       .from('active_streams')
       .select('*')
       .eq('user_id', user.id);
@@ -191,7 +207,7 @@ serve(async (req) => {
     // === 6. REGISTER/UPDATE STREAM ===
     if (existingDeviceStream) {
       // Update heartbeat for existing stream
-      await supabaseClient
+      await supabaseAdmin
         .from('active_streams')
         .update({ 
           last_heartbeat: new Date().toISOString(),
@@ -201,7 +217,7 @@ serve(async (req) => {
         .eq('id', existingDeviceStream.id);
     } else {
       // Create new stream
-      await supabaseClient
+      await supabaseAdmin
         .from('active_streams')
         .insert({
           user_id: user.id,
