@@ -36,7 +36,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4 md:gap-8">
           <Link to="/home" className="text-xl md:text-2xl font-bold text-primary">
-            OTT Perú
+            StreemingTv
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
@@ -102,7 +102,7 @@ const Navbar = () => {
                   className="text-2xl font-bold text-primary mb-4"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  OTT Perú
+                  StreemingTv
                 </Link>
                 
                 {navLinks.map((link) => (
