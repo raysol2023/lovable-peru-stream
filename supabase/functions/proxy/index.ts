@@ -12,7 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    // Extract target URL from query parameter
     const url = new URL(req.url);
     const targetUrl = url.searchParams.get('url');
 
@@ -37,57 +36,44 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('[PROXY] Fetch failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: targetUrl
-      });
+      console.error('[PROXY] Fetch failed:', response.status, response.statusText);
       return new Response(
-        JSON.stringify({ error: `Proxy failed: ${response.status} ${response.statusText}` }),
+        JSON.stringify({ error: `Proxy failed: ${response.status}` }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get content type from response
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     let content = await response.text();
 
-    // If it's a playlist (m3u8), rewrite URLs to go through proxy
+    // Rewrite m3u8 URLs to use proxy
     if (contentType.includes('m3u8') || contentType.includes('mpegURL') || targetUrl.endsWith('.m3u8')) {
       console.log('[PROXY] Rewriting m3u8 URLs');
       const baseUrl = new URL(targetUrl);
-      const proxyBaseUrl = `${url.origin}/functions/v1/proxy?url=`;
+      
+      // Get the Supabase project URL from environment
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || url.origin;
+      const proxyBaseUrl = `${supabaseUrl}/functions/v1/proxy?url=`;
 
-      // Rewrite relative and absolute URLs in the manifest
       content = content.split('\n').map(line => {
-        // Skip comments and empty lines
         if (line.startsWith('#') || line.trim() === '') {
           return line;
         }
 
-        // If line is a URL
         if (line.trim().length > 0) {
           let absoluteUrl: string;
 
-          // Handle absolute URLs
           if (line.startsWith('http://') || line.startsWith('https://')) {
             absoluteUrl = line;
-          } 
-          // Handle protocol-relative URLs
-          else if (line.startsWith('//')) {
+          } else if (line.startsWith('//')) {
             absoluteUrl = baseUrl.protocol + line;
-          }
-          // Handle absolute paths
-          else if (line.startsWith('/')) {
+          } else if (line.startsWith('/')) {
             absoluteUrl = `${baseUrl.protocol}//${baseUrl.host}${line}`;
-          }
-          // Handle relative paths
-          else {
+          } else {
             const basePath = baseUrl.pathname.substring(0, baseUrl.pathname.lastIndexOf('/') + 1);
             absoluteUrl = `${baseUrl.protocol}//${baseUrl.host}${basePath}${line}`;
           }
 
-          // Return proxied URL
           return `${proxyBaseUrl}${encodeURIComponent(absoluteUrl)}`;
         }
 
@@ -95,13 +81,8 @@ serve(async (req) => {
       }).join('\n');
     }
 
-    console.log('[PROXY] Success:', {
-      contentType,
-      contentLength: content.length,
-      url: targetUrl
-    });
+    console.log('[PROXY] Success:', contentType, content.length, 'bytes');
 
-    // Return content with CORS headers
     return new Response(content, {
       headers: {
         ...corsHeaders,
