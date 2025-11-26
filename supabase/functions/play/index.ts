@@ -6,6 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const browserUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 // Geo-IP validation function (using ipapi.co free service)
 async function validateGeoIP(ip: string): Promise<boolean> {
   try {
@@ -90,13 +92,26 @@ serve(async (req) => {
 
       console.log('Proxying request to:', targetUrl);
 
-      // Fetch the actual content
-      const response = await fetch(targetUrl);
+      // Fetch the actual content with browser headers
+      const urlObj = new URL(targetUrl);
+      const response = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': browserUserAgent,
+          'Accept': '*/*',
+          'Accept-Language': 'es-PE,es;q=0.9,en;q=0.8',
+          'Referer': urlObj.origin + '/',
+          'Origin': urlObj.origin,
+        }
+      });
       
       if (!response.ok) {
-        console.error('Proxy fetch failed:', response.status, response.statusText);
+        console.error('Proxy fetch failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
         return new Response(
-          JSON.stringify({ error: 'Failed to fetch content' }),
+          JSON.stringify({ error: `Failed to fetch content: ${response.status} ${response.statusText}` }),
           { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
