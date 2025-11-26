@@ -21,6 +21,7 @@ export function usePlaybackSession() {
           error: 'Sesión expirada. Por favor, inicia sesión de nuevo.',
           code: 'NO_SUBSCRIPTION'
         });
+        setTimeout(() => window.location.href = '/login', 2000);
         return null;
       }
 
@@ -42,7 +43,20 @@ export function usePlaybackSession() {
 
       console.log('Playback response:', { data, error: invokeError });
 
-      if (invokeError) throw invokeError;
+      if (invokeError) {
+        // Handle 401 Unauthorized - session expired on server
+        if (invokeError.message?.includes('401') || invokeError.message?.includes('Unauthorized')) {
+          console.error('Session invalid on server, clearing and redirecting to login');
+          await supabase.auth.signOut();
+          setError({
+            error: 'Sesión expirada. Redirigiendo al login...',
+            code: 'NO_SUBSCRIPTION'
+          });
+          setTimeout(() => window.location.href = '/login', 2000);
+          return null;
+        }
+        throw invokeError;
+      }
       
       if (data?.error) {
         setError(data as PlaybackError);
