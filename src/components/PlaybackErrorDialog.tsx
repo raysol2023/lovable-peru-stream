@@ -31,7 +31,14 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
           description: error.error,
           icon: "🌎",
           actions: (
-            <AlertDialogAction onClick={onClose}>Entendido</AlertDialogAction>
+            <>
+              {onRetry && (
+                <Button variant="outline" onClick={() => { onClose(); onRetry(); }}>
+                  Reintentar
+                </Button>
+              )}
+              <AlertDialogAction onClick={onClose}>Entendido</AlertDialogAction>
+            </>
           )
         };
 
@@ -114,7 +121,27 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
           title: "Error de reproducción",
           description: error.error || "Ha ocurrido un error inesperado",
           icon: "⚠️",
-          actions: <AlertDialogAction onClick={onClose}>Cerrar</AlertDialogAction>
+          actions: (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => { onClose(); navigate(-1); }}
+              >
+                Volver Atrás
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => { onClose(); navigate('/livetv'); }}
+              >
+                Ir a Canales
+              </Button>
+              {onRetry && (
+                <AlertDialogAction onClick={() => { onClose(); onRetry(); }}>
+                  Reintentar
+                </AlertDialogAction>
+              )}
+            </>
+          )
         };
     }
   };
