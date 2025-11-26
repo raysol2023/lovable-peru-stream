@@ -34,10 +34,106 @@ async function validateGeoIP(ip: string): Promise<boolean> {
   }
 }
 
+// Helper function to check if URL needs proxy
+function needsProxy(url: string): boolean {
+  return url.includes('38.183.182.166:8000') || 
+         url.includes('jireh-3-hls-video-us-isp.dps.live');
+}
+
+// Helper function to rewrite URLs in manifest
+function rewriteManifestUrls(manifestContent: string, baseUrl: string, proxyBaseUrl: string): string {
+  const lines = manifestContent.split('\n');
+  const rewrittenLines = lines.map(line => {
+    // Skip comments and empty lines
+    if (line.startsWith('#') || line.trim() === '') {
+      return line;
+    }
+    
+    // If it's a relative URL (doesn't start with http:// or https://)
+    if (!line.startsWith('http://') && !line.startsWith('https://')) {
+      // Convert relative URL to absolute using the original base URL
+      const url = new URL(line, baseUrl);
+      // Return proxied URL
+      return `${proxyBaseUrl}/proxy?url=${encodeURIComponent(url.toString())}`;
+    }
+    
+    // If it's an absolute URL, proxy it
+    if (line.startsWith('http://') || line.startsWith('https://')) {
+      return `${proxyBaseUrl}/proxy?url=${encodeURIComponent(line)}`;
+    }
+    
+    return line;
+  });
+  
+  return rewrittenLines.join('\n');
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  const url = new URL(req.url);
+  
+  // === PROXY MODE: GET /proxy?url=... ===
+  if (req.method === 'GET' && url.pathname.endsWith('/proxy')) {
+    try {
+      const targetUrl = url.searchParams.get('url');
+      
+      if (!targetUrl) {
+        return new Response(
+          JSON.stringify({ error: 'Missing url parameter' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Proxying request to:', targetUrl);
+
+      // Fetch the actual content
+      const response = await fetch(targetUrl);
+      
+      if (!response.ok) {
+        console.error('Proxy fetch failed:', response.status, response.statusText);
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch content' }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = response.headers.get('content-type') || 'application/x-mpegURL';
+      let content = await response.text();
+
+      // If it's a manifest file (.m3u8), rewrite URLs
+      if (contentType.includes('mpegURL') || contentType.includes('m3u8') || targetUrl.endsWith('.m3u8')) {
+        const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+        const proxyBaseUrl = url.origin + url.pathname.replace('/proxy', '');
+        content = rewriteManifestUrls(content, baseUrl, proxyBaseUrl);
+      }
+
+      // Return with CORS headers
+      return new Response(content, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': contentType,
+        },
+      });
+    } catch (error) {
+      console.error('Error in proxy:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return new Response(
+        JSON.stringify({ error: message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
+  // === PLAYBACK SESSION MODE: POST (existing functionality) ===
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
@@ -249,10 +345,20 @@ serve(async (req) => {
         });
     }
 
-    // === 7. RETURN MANIFEST URL ===
+    // === 7. RETURN MANIFEST URL (or proxied URL) ===
+    let manifestUrl = content.manifest_url;
+    
+    // If content needs proxy, return proxied URL
+    if (needsProxy(manifestUrl)) {
+      const functionUrl = Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'supabase.co/functions/v1/play') || 
+                         req.url.split('/play')[0] + '/play';
+      manifestUrl = `${functionUrl}/proxy?url=${encodeURIComponent(manifestUrl)}`;
+      console.log('🔄 Using proxy for URL:', { original: content.manifest_url, proxied: manifestUrl });
+    }
+    
     return new Response(
       JSON.stringify({ 
-        manifest_url: content.manifest_url,
+        manifest_url: manifestUrl,
         content_id: content_id,
         title: content.title,
         device_id: device_id,
