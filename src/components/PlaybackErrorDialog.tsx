@@ -43,7 +43,7 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
               onClose();
               navigate(-1);
             }}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto order-1"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver Atrás
@@ -55,7 +55,7 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
               onClose();
               navigate('/livetv');
             }}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto order-2"
           >
             <Tv className="mr-2 h-4 w-4" />
             Ir a Canales
@@ -66,7 +66,7 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
               onClose();
               onRetry();
             }}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto order-3"
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Reintentar
