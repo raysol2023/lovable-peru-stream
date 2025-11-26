@@ -12,6 +12,9 @@ verify_jwt = true
 [functions.play]
 verify_jwt = true
 
+[functions.proxy]
+verify_jwt = false
+
 [functions.subscription-checkout]
 verify_jwt = true
 
