@@ -91,6 +91,7 @@ export default function Watch() {
           <VideoPlayer 
             manifestUrl={manifestUrl}
             autoPlay={true}
+            isLive={content.is_tv}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
