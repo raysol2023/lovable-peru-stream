@@ -24,14 +24,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+        console.log('[AuthContext] Auth state changed:', event, session ? 'has session' : 'no session');
+        
+        // Handle session expiration
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // If signed out and not on public pages, redirect to login
+          if (event === 'SIGNED_OUT' && !['/login', '/register', '/forgot-password'].includes(window.location.pathname)) {
+            console.log('[AuthContext] Session expired, redirecting to login');
+            window.location.href = '/login';
+          }
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        
         setLoading(false);
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[AuthContext] Initial session check:', session ? 'has session' : 'no session');
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
