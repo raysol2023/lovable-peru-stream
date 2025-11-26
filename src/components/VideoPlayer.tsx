@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { Button } from './ui/button';
-import { Play, Pause, Volume2, VolumeX, Maximize, Settings } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Settings, ChevronLeft } from 'lucide-react';
 import { Slider } from './ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 interface VideoPlayerProps {
   manifestUrl: string;
@@ -12,6 +13,9 @@ interface VideoPlayerProps {
   onDurationChange?: (duration: number) => void;
   autoPlay?: boolean;
   isLive?: boolean;
+  channelTitle?: string;
+  currentProgramTitle?: string;
+  onBack?: () => void;
 }
 
 export function VideoPlayer({ 
@@ -19,7 +23,10 @@ export function VideoPlayer({
   onTimeUpdate, 
   onDurationChange,
   autoPlay = true,
-  isLive = false
+  isLive = false,
+  channelTitle,
+  currentProgramTitle,
+  onBack
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -34,6 +41,7 @@ export function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [qualities, setQualities] = useState<Array<{ height: number; index: number }>>([]);
   const [currentQuality, setCurrentQuality] = useState<number>(-1);
+  const [showCenterPlayPause, setShowCenterPlayPause] = useState(false);
 
   // Auto-hide controls
   useEffect(() => {
@@ -229,6 +237,16 @@ export function VideoPlayer({
     }
   };
 
+  const handleVideoClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent click if clicking on controls
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-controls]')) return;
+    
+    togglePlay();
+    setShowCenterPlayPause(true);
+    setTimeout(() => setShowCenterPlayPause(false), 600);
+  };
+
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -273,6 +291,7 @@ export function VideoPlayer({
     <div 
       ref={containerRef}
       className="relative w-full h-full bg-black group"
+      onClick={handleVideoClick}
       onDoubleClick={handleDoubleClick}
     >
       <video
@@ -281,26 +300,84 @@ export function VideoPlayer({
         playsInline
       />
       
-      {/* Center Play Button */}
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors z-10">
-          <Button
-            size="lg"
-            onClick={togglePlay}
-            className="rounded-full w-20 h-20 bg-background/20 hover:bg-background/30 backdrop-blur-sm"
-            variant="ghost"
-          >
-            <Play className="h-10 w-10 text-white" fill="white" />
-          </Button>
+      {/* Disney+ Style Header */}
+      <div 
+        className={cn(
+          "absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 transition-opacity duration-300 z-20",
+          showControls ? "opacity-100" : "opacity-0"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <Button
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onBack();
+              }}
+              className="bg-transparent hover:bg-white/10 rounded-full"
+              variant="ghost"
+            >
+              <ChevronLeft className="h-6 w-6 text-white" />
+            </Button>
+          )}
+          <div className="flex flex-col gap-1">
+            <h1 className="text-white text-xl font-semibold">
+              {currentProgramTitle || channelTitle || 'En Vivo'}
+            </h1>
+            {currentProgramTitle && channelTitle && (
+              <Badge variant="destructive" className="w-fit text-xs">
+                {channelTitle}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Center Play/Pause Icon */}
+      {showCenterPlayPause && (
+        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
+          <div className="rounded-full bg-black/60 backdrop-blur-sm p-8">
+            {isPlaying ? (
+              <Pause className="h-16 w-16 text-white" fill="white" />
+            ) : (
+              <Play className="h-16 w-16 text-white" fill="white" />
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Center Play Button (when paused) */}
+      {!isPlaying && !showCenterPlayPause && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors z-10 pointer-events-none">
+          <div className="rounded-full bg-background/20 backdrop-blur-sm p-6">
+            <Play className="h-12 w-12 text-white" fill="white" />
+          </div>
+        </div>
+      )}
+
+      {/* Live Progress Bar (non-navigable) */}
+      {isLive && (
+        <div 
+          className={cn(
+            "absolute bottom-16 left-0 right-0 px-4 transition-opacity duration-300 z-20",
+            showControls ? "opacity-100" : "opacity-0"
+          )}
+        >
+          <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-full bg-red-600 w-full animate-pulse" />
+          </div>
         </div>
       )}
 
       {/* Controls Bar */}
       <div 
+        data-controls
         className={cn(
           "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 transition-opacity duration-300 z-20",
           showControls ? "opacity-100" : "opacity-0"
         )}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-4">
           {/* Left Controls */}

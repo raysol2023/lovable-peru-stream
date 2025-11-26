@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useContentById } from '@/hooks/useContent';
 import { usePlaybackSession } from '@/hooks/usePlaybackSession';
 import { useActiveProfile } from '@/hooks/useActiveProfile';
+import { useEPG } from '@/hooks/useEPG';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { PlaybackErrorDialog } from '@/components/PlaybackErrorDialog';
 
@@ -13,9 +14,22 @@ export default function Watch() {
   const navigate = useNavigate();
   const { profileId } = useActiveProfile();
   const { data: content, isLoading: contentLoading } = useContentById(id || '');
+  const { data: epgPrograms } = useEPG(content?.is_tv ? id || null : null);
   const { startPlayback, sendHeartbeat, loading, error } = usePlaybackSession();
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
+
+  // Get current program from EPG
+  const currentProgram = useMemo(() => {
+    if (!epgPrograms || epgPrograms.length === 0) return null;
+    
+    const now = new Date();
+    return epgPrograms.find(program => {
+      const start = new Date(program.start_time);
+      const end = new Date(program.end_time);
+      return now >= start && now <= end;
+    });
+  }, [epgPrograms]);
 
   // Start playback session
   useEffect(() => {
@@ -73,18 +87,6 @@ export default function Watch() {
           className="absolute inset-0 bg-cover bg-center blur-sm opacity-30"
           style={{ backgroundImage: `url(${content.cover_image_url})` }}
         />
-        
-        {/* Back Button */}
-        <div className="absolute top-4 left-4 z-50">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="bg-black/50 hover:bg-black/70 text-white rounded-full"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-        </div>
 
         {/* Video Player */}
         {manifestUrl ? (
@@ -92,6 +94,9 @@ export default function Watch() {
             manifestUrl={manifestUrl}
             autoPlay={true}
             isLive={content.is_tv}
+            channelTitle={content.title}
+            currentProgramTitle={currentProgram?.program_title}
+            onBack={() => navigate(-1)}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
