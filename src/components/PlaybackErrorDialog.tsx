@@ -1,21 +1,19 @@
+import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { PlaybackError } from "@/types/playback";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { AlertTriangle, ArrowLeft, RefreshCcw, Tv } from "lucide-react";
 
 interface PlaybackErrorDialogProps {
-  error: PlaybackError | null;
+  error: { code: string; error: string } | null;
   onClose: () => void;
-  onRetry?: () => void;
+  onRetry: () => void;
 }
 
 export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDialogProps) {
@@ -23,150 +21,58 @@ export function PlaybackErrorDialog({ error, onClose, onRetry }: PlaybackErrorDi
 
   if (!error) return null;
 
-  const getErrorContent = () => {
-    switch (error.code) {
-      case 'GEO_BLOCKED':
-        return {
-          title: "Contenido no disponible",
-          description: error.error,
-          icon: "🌎",
-          actions: (
-            <>
-              {onRetry && (
-                <Button variant="outline" onClick={() => { onClose(); onRetry(); }}>
-                  Reintentar
-                </Button>
-              )}
-              <AlertDialogAction onClick={onClose}>Entendido</AlertDialogAction>
-            </>
-          )
-        };
-
-      case 'CONCURRENT_LIMIT_REACHED':
-        return {
-          title: "Límite de dispositivos alcanzado",
-          description: `Has alcanzado el límite de ${error.limit} dispositivo(s) simultáneos. Por favor, cierra la reproducción en otro dispositivo.`,
-          icon: "📱",
-          details: error.oldest_device ? `Dispositivo más antiguo: ${error.oldest_device}` : undefined,
-          actions: (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={async () => {
-                  try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                      await supabase.functions.invoke('session-close-oldest', {
-                        headers: { Authorization: `Bearer ${session.access_token}` }
-                      });
-                    }
-                    onClose();
-                    if (onRetry) onRetry();
-                  } catch (err) {
-                    console.error('Error closing oldest session:', err);
-                  }
-                }}
-              >
-                Cerrar Sesión Más Antigua
-              </Button>
-              {onRetry && (
-                <Button variant="outline" onClick={() => { onClose(); onRetry(); }}>
-                  Reintentar
-                </Button>
-              )}
-              <AlertDialogAction onClick={() => { onClose(); navigate('/account'); }}>
-                Ver Planes
-              </AlertDialogAction>
-            </>
-          )
-        };
-
-      case 'PLAN_UPGRADE_REQUIRED':
-        return {
-          title: "Mejora tu Plan",
-          description: error.error,
-          icon: "📺",
-          details: error.current_plan ? `Plan actual: ${error.current_plan}` : undefined,
-          actions: (
-            <>
-              <Button variant="outline" onClick={onClose}>
-                Volver
-              </Button>
-              <AlertDialogAction onClick={() => { onClose(); navigate('/account'); }}>
-                Ver Planes
-              </AlertDialogAction>
-            </>
-          )
-        };
-
-      case 'NO_SUBSCRIPTION':
-        return {
-          title: "Suscripción requerida",
-          description: error.error,
-          icon: "💳",
-          actions: (
-            <>
-              <Button variant="outline" onClick={() => { onClose(); navigate('/home'); }}>
-                Volver
-              </Button>
-              <AlertDialogAction onClick={() => { onClose(); navigate('/account'); }}>
-                Ver Planes
-              </AlertDialogAction>
-            </>
-          )
-        };
-
-      default:
-        return {
-          title: "Error de reproducción",
-          description: error.error || "Ha ocurrido un error inesperado",
-          icon: "⚠️",
-          actions: (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={() => { onClose(); navigate(-1); }}
-              >
-                Volver Atrás
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => { onClose(); navigate('/livetv'); }}
-              >
-                Ir a Canales
-              </Button>
-              {onRetry && (
-                <AlertDialogAction onClick={() => { onClose(); onRetry(); }}>
-                  Reintentar
-                </AlertDialogAction>
-              )}
-            </>
-          )
-        };
-    }
-  };
-
-  const content = getErrorContent();
-
   return (
-    <AlertDialog open={!!error} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{content.icon}</span>
-            {content.title}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>{content.description}</p>
-            {content.details && (
-              <p className="text-sm text-muted-foreground">{content.details}</p>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          {content.actions}
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Dialog open={!!error} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <DialogTitle className="text-xl">Error de Reproducción</DialogTitle>
+          </div>
+          <DialogDescription className="text-base pt-2">
+            {error.error || "No se pudo reproducir el contenido. Por favor, intenta nuevamente."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              onClose();
+              navigate(-1);
+            }}
+            className="w-full sm:w-auto"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver Atrás
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => {
+              onClose();
+              navigate('/livetv');
+            }}
+            className="w-full sm:w-auto"
+          >
+            <Tv className="mr-2 h-4 w-4" />
+            Ir a Canales
+          </Button>
+
+          <Button
+            onClick={() => {
+              onClose();
+              onRetry();
+            }}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Reintentar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
