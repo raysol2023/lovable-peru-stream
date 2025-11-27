@@ -38,17 +38,8 @@ export default function Watch() {
     const initPlayback = async () => {
       const session = await startPlayback(id, profileId);
       if (session) {
-        // Check if URL needs proxy (for problematic servers)
-        let finalUrl = session.manifest_url;
-        
-        if (finalUrl.includes('38.183.182.166') || finalUrl.includes('dps.live')) {
-          console.log('[Watch] URL needs proxy:', finalUrl);
-          const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/proxy?url=${encodeURIComponent(finalUrl)}`;
-          finalUrl = proxyUrl;
-          console.log('[Watch] Using proxy URL:', proxyUrl);
-        }
-        
-        setManifestUrl(finalUrl);
+        // Backend already provides the correct URL (proxied if needed)
+        setManifestUrl(session.manifest_url);
       } else {
         setShowError(true);
       }

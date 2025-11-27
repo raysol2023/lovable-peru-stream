@@ -363,11 +363,10 @@ serve(async (req) => {
     // === 7. RETURN MANIFEST URL (or proxied URL) ===
     let manifestUrl = content.manifest_url;
     
-    // If content needs proxy, return proxied URL
+    // If content needs proxy, return proxied URL pointing to dedicated proxy function
     if (needsProxy(manifestUrl)) {
-      const functionUrl = Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'supabase.co/functions/v1/play') || 
-                         req.url.split('/play')[0] + '/play';
-      manifestUrl = `${functionUrl}/proxy?url=${encodeURIComponent(manifestUrl)}`;
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || url.origin;
+      manifestUrl = `${supabaseUrl}/functions/v1/proxy?url=${encodeURIComponent(manifestUrl)}`;
       console.log('🔄 Using proxy for URL:', { original: content.manifest_url, proxied: manifestUrl });
     }
     
