@@ -247,35 +247,27 @@ export function HeroBanner({ title }: HeroBannerProps) {
                 key={item.id}
                 onClick={() => handleThumbnailClick(idx % items.length)}
                 className={cn(
-                  "group relative flex-shrink-0 w-64 aspect-video rounded-lg overflow-hidden transition-all duration-300",
-                  "border hover:border-white hover:scale-105 cursor-pointer",
+                  "group/card relative flex-shrink-0 w-64 aspect-video rounded-md overflow-hidden cursor-pointer transition-all duration-300",
+                  "border hover:border-white hover:scale-105",
                   (idx % items.length) === currentIndex 
-                    ? "border-white opacity-100 scale-105 ring-2 ring-white/50" 
-                    : "border-transparent opacity-70 hover:opacity-100"
+                    ? "border-white scale-105 ring-2 ring-white/50" 
+                    : "border-transparent"
                 )}
               >
+                {/* Clean Image - zoom on hover */}
                 <img
                   src={item.cover_image_url}
                   alt={item.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
                   loading="lazy"
                   decoding="async"
                 />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                
-                {/* Title */}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <p className="text-xs text-white font-medium truncate">
+
+                {/* Hover Overlay with Title */}
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
+                  <p className="text-white font-bold text-sm text-center px-2 drop-shadow-md">
                     {item.title}
                   </p>
-                </div>
-
-                {/* Play icon on hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Play className="w-5 h-5 text-white fill-current" />
-                  </div>
                 </div>
 
                 {/* Active indicator */}
