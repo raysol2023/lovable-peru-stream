@@ -67,10 +67,13 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-16">
-        <HeroBanner title={featuredTitle} />
+        {/* Hero Banner - relative positioning */}
+        <div className="relative">
+          <HeroBanner title={featuredTitle} />
+        </div>
         
-        {/* Content Sections - Overlaps Hero with z-index for clickability */}
-        <div className="-mt-32 relative z-20 pb-8">
+        {/* Content Sections - Overlaps Hero, z-20 for layering, bg-transparent for gradient visibility */}
+        <div className="-mt-32 relative z-20 bg-transparent pb-16">
           {carousels.map((carousel) => 
             carousel.content.length > 0 && (
               <Carousel 
