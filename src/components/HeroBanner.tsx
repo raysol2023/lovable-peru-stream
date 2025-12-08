@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Play, Info } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Content } from '@/types/content';
 import { useNavigate } from 'react-router-dom';
@@ -66,24 +66,12 @@ export function HeroBanner({ title }: HeroBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Use featured content or fallback to prop
   const items = FEATURED_CONTENT;
   const currentItem = items[currentIndex];
 
-  // Get next 3 items for thumbnails
-  const getUpcomingItems = useCallback(() => {
-    const upcoming = [];
-    for (let i = 1; i <= 3; i++) {
-      const index = (currentIndex + i) % items.length;
-      upcoming.push({ ...items[index], originalIndex: index });
-    }
-    return upcoming;
-  }, [currentIndex, items]);
-
-  const upcomingItems = getUpcomingItems();
-
-  // Auto-play logic
+  // Auto-play logic - 6 seconds
   useEffect(() => {
     if (isPaused) return;
 
@@ -93,7 +81,7 @@ export function HeroBanner({ title }: HeroBannerProps) {
         setCurrentIndex((prev) => (prev + 1) % items.length);
         setTimeout(() => setIsTransitioning(false), 100);
       }, 500);
-    }, 5000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [isPaused, items.length]);
@@ -119,13 +107,20 @@ export function HeroBanner({ title }: HeroBannerProps) {
     }
   };
 
+  const scrollThumbnails = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div 
-      className="relative h-[70vh] sm:h-[75vh] md:h-[85vh] w-full overflow-hidden bg-zinc-950"
+      className="relative h-[95vh] w-full overflow-hidden bg-background"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Background Image with Transition */}
+      {/* === LAYER 1: Background Image === */}
       <div className="absolute inset-0">
         <img 
           src={currentItem.cover_image_url}
@@ -139,150 +134,159 @@ export function HeroBanner({ title }: HeroBannerProps) {
         />
       </div>
 
-      {/* Immersive Gradient Overlays */}
-      {/* Bottom to top fade - stronger at bottom for thumbnail visibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent" />
+      {/* Gradient Overlays */}
+      {/* Left fade for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
       
-      {/* Left to right fade - text readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent" />
-      
-      {/* Subtle vignette effect */}
-      <div className="absolute inset-0 bg-radial-gradient pointer-events-none" 
-           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(9,9,11,0.3) 100%)' }} />
+      {/* Subtle vignette */}
+      <div className="absolute inset-0 pointer-events-none" 
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, hsl(var(--background) / 0.4) 100%)' }} />
 
-      {/* Content Container */}
-      <div className="absolute inset-0 flex items-end pb-16 sm:pb-20 md:pb-28">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            {/* Category Pills */}
-            <div className={cn(
-              "flex items-center gap-2 mb-4 transition-all duration-700 delay-100",
-              isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}>
-              {currentItem.category?.map((cat, idx) => (
-                <span 
-                  key={idx}
-                  className="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur-sm rounded-full text-white/90 border border-white/10"
-                >
-                  {cat}
-                </span>
-              ))}
-              {currentItem.year && (
-                <span className="px-3 py-1 text-xs font-medium bg-primary/20 backdrop-blur-sm rounded-full text-primary border border-primary/30">
-                  {currentItem.year}
-                </span>
-              )}
-            </div>
+      {/* === CRITICAL: Dark "bed" at bottom for thumbnail strip === */}
+      <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-background via-background to-transparent z-10" />
 
-            {/* Title */}
-            <h1 className={cn(
-              "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 tracking-tight transition-all duration-700 delay-150",
-              isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}
-            style={{ textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}
+      {/* === LAYER 2: Title & Buttons (floating above thumbnail strip) === */}
+      <div className="absolute left-6 sm:left-8 lg:left-12 bottom-52 z-20 max-w-2xl">
+        {/* Category Pills */}
+        <div className={cn(
+          "flex items-center gap-2 mb-4 transition-all duration-700 delay-100",
+          isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        )}>
+          {currentItem.category?.map((cat, idx) => (
+            <span 
+              key={idx}
+              className="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur-sm rounded-full text-white/90 border border-white/10"
             >
-              {currentItem.title}
-            </h1>
-
-            {/* Description */}
-            <p className={cn(
-              "text-base sm:text-lg text-white/80 mb-6 line-clamp-2 sm:line-clamp-3 max-w-xl transition-all duration-700 delay-200",
-              isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}>
-              {currentItem.description}
-            </p>
-
-            {/* Action Buttons */}
-            <div className={cn(
-              "flex gap-3 sm:gap-4 transition-all duration-700 delay-300",
-              isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}>
-              <Button 
-                size="lg"
-                className="bg-white text-zinc-900 hover:bg-white/90 shadow-2xl shadow-white/20 text-sm sm:text-base font-semibold px-6 sm:px-8"
-                onClick={handlePlay}
-              >
-                <Play className="mr-2 h-5 w-5 fill-current" />
-                Reproducir
-              </Button>
-              <Button 
-                size="lg"
-                variant="outline"
-                className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 text-sm sm:text-base font-semibold px-6 sm:px-8"
-                onClick={handleMoreInfo}
-              >
-                <Info className="mr-2 h-5 w-5" />
-                Más Info
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Thumbnails - Horizontal Bottom Right (TV360/Netflix Style) */}
-      <div className="absolute bottom-12 right-6 sm:right-8 lg:right-12 z-30 hidden sm:block">
-        {/* Label aligned right */}
-        <p className="text-xs font-bold text-gray-300 mb-2 uppercase tracking-widest text-right">
-          A Continuación
-        </p>
-        
-        {/* Horizontal thumbnail row */}
-        <div className="flex flex-row gap-4 items-end">
-          {upcomingItems.map((item, idx) => (
-            <button
-              key={item.id}
-              onClick={() => handleThumbnailClick(item.originalIndex)}
-              className={cn(
-                "group relative w-40 h-24 md:w-48 md:h-28 rounded-lg overflow-hidden transition-all duration-300",
-                "focus:outline-none focus:ring-2 focus:ring-white",
-                idx === 0 
-                  ? "border-2 border-white opacity-100 scale-105 shadow-2xl shadow-black/60" 
-                  : "border-0 opacity-60 hover:opacity-100 hover:scale-105"
-              )}
-            >
-              <img
-                src={item.cover_image_url}
-                alt={item.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-              {/* Thumbnail overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
-              {/* Thumbnail title */}
-              <div className="absolute bottom-0 left-0 right-0 p-2">
-                <p className="text-[10px] md:text-xs text-white font-medium truncate">
-                  {item.title}
-                </p>
-              </div>
-
-              {/* Play indicator on hover */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Play className="w-5 h-5 text-white fill-current" />
-                </div>
-              </div>
-            </button>
+              {cat}
+            </span>
           ))}
+          {currentItem.year && (
+            <span className="px-3 py-1 text-xs font-medium bg-primary/20 backdrop-blur-sm rounded-full text-primary border border-primary/30">
+              {currentItem.year}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <h1 className={cn(
+          "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 tracking-tight transition-all duration-700 delay-150",
+          isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        )}
+        style={{ textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}
+        >
+          {currentItem.title}
+        </h1>
+
+        {/* Description */}
+        <p className={cn(
+          "text-base sm:text-lg text-white/80 mb-6 line-clamp-2 sm:line-clamp-3 max-w-xl transition-all duration-700 delay-200",
+          isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        )}>
+          {currentItem.description}
+        </p>
+
+        {/* Action Buttons */}
+        <div className={cn(
+          "flex gap-3 sm:gap-4 transition-all duration-700 delay-300",
+          isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        )}>
+          <Button 
+            size="lg"
+            className="bg-white text-zinc-900 hover:bg-white/90 shadow-2xl shadow-white/20 text-sm sm:text-base font-semibold px-6 sm:px-8"
+            onClick={handlePlay}
+          >
+            <Play className="mr-2 h-5 w-5 fill-current" />
+            Reproducir
+          </Button>
+          <Button 
+            size="lg"
+            variant="outline"
+            className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 text-sm sm:text-base font-semibold px-6 sm:px-8"
+            onClick={handleMoreInfo}
+          >
+            <Info className="mr-2 h-5 w-5" />
+            Más Info
+          </Button>
         </div>
       </div>
 
-      {/* Progress Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        {items.map((_, idx) => (
+      {/* === LAYER 3: Bottom Thumbnail Strip (Static - doesn't rotate) === */}
+      <div className="group/strip absolute bottom-0 left-0 w-full z-30 px-6 sm:px-8 lg:px-12 pb-6">
+        {/* Section Title */}
+        <p className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">
+          Tendencias Ahora
+        </p>
+
+        {/* Scroll Container with Navigation */}
+        <div className="relative">
+          {/* Left Arrow */}
           <button
-            key={idx}
-            onClick={() => handleThumbnailClick(idx)}
-            className={cn(
-              "h-1 rounded-full transition-all duration-500",
-              idx === currentIndex 
-                ? "w-8 bg-white" 
-                : "w-2 bg-white/30 hover:bg-white/50"
-            )}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
+            onClick={() => scrollThumbnails('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-40 opacity-0 group-hover/strip:opacity-100 transition-opacity duration-300 bg-black/50 hover:bg-black/80 rounded-full p-2"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Thumbnails */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {items.map((item, idx) => (
+              <button
+                key={item.id}
+                onClick={() => handleThumbnailClick(idx)}
+                className={cn(
+                  "group relative flex-shrink-0 w-40 aspect-video rounded-lg overflow-hidden transition-all duration-300",
+                  "border hover:border-white hover:scale-105 cursor-pointer",
+                  idx === currentIndex 
+                    ? "border-white opacity-100 scale-105 ring-2 ring-white/50" 
+                    : "border-transparent opacity-70 hover:opacity-100"
+                )}
+              >
+                <img
+                  src={item.cover_image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                
+                {/* Title */}
+                <div className="absolute bottom-0 left-0 right-0 p-2">
+                  <p className="text-[10px] text-white font-medium truncate">
+                    {item.title}
+                  </p>
+                </div>
+
+                {/* Play icon on hover */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Play className="w-4 h-4 text-white fill-current" />
+                  </div>
+                </div>
+
+                {/* Active indicator */}
+                {idx === currentIndex && (
+                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => scrollThumbnails('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-40 opacity-0 group-hover/strip:opacity-100 transition-opacity duration-300 bg-black/50 hover:bg-black/80 rounded-full p-2"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5 text-white" />
+          </button>
+        </div>
       </div>
     </div>
   );
