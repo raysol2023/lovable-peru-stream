@@ -1,6 +1,7 @@
 import { Play, Info } from 'lucide-react';
 import { Content } from '@/types/content';
 import { useNavigate } from 'react-router-dom';
+import { optimizeImageUrl, IMAGE_PRESETS } from '@/utils/imageOptimizer';
 
 interface MovieCardProps {
   title: Content;
@@ -8,6 +9,11 @@ interface MovieCardProps {
 
 export function MovieCard({ title }: MovieCardProps) {
   const navigate = useNavigate();
+
+  const optimizedImageUrl = optimizeImageUrl(
+    title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728',
+    IMAGE_PRESETS.card
+  );
 
   return (
     <div 
@@ -20,12 +26,12 @@ export function MovieCard({ title }: MovieCardProps) {
     >
       <div className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-glow transition-shadow duration-300">
         <img 
-          src={title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728'} 
+          src={optimizedImageUrl} 
           alt={title.title}
           className="w-full h-56 sm:h-64 md:h-72 object-cover transition-transform duration-300"
           loading="lazy"
-          width={192}
-          height={288}
+          width={480}
+          height={270}
           decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300" />

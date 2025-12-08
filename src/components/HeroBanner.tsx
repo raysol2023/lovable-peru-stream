@@ -2,6 +2,7 @@ import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Content } from '@/types/content';
 import { useNavigate } from 'react-router-dom';
+import { optimizeImageUrl, IMAGE_PRESETS } from '@/utils/imageOptimizer';
 
 interface HeroBannerProps {
   title?: Content;
@@ -20,12 +21,21 @@ export function HeroBanner({ title }: HeroBannerProps) {
     );
   }
 
+  const optimizedImageUrl = optimizeImageUrl(
+    title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728',
+    IMAGE_PRESETS.hero
+  );
+
   return (
     <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] w-full overflow-hidden">
       <img 
-        src={title.cover_image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728'}
+        src={optimizedImageUrl}
         alt={title.title}
         className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        decoding="async"
+        width={1920}
+        height={1080}
       />
       
       <div className="absolute inset-0 gradient-hero" />
