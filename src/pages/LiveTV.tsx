@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { optimizeImageUrl, IMAGE_PRESETS } from '@/utils/imageOptimizer';
 
 // Memoized Channel Card Component
 const ChannelCard = memo(function ChannelCard({
@@ -20,6 +21,8 @@ const ChannelCard = memo(function ChannelCard({
   channel: LiveChannel;
   onClick: (id: string) => void;
 }) {
+  const optimizedImageUrl = optimizeImageUrl(channel.cover_image_url, IMAGE_PRESETS.tile);
+  
   return (
     <div
       onClick={() => onClick(channel.id)}
@@ -28,12 +31,13 @@ const ChannelCard = memo(function ChannelCard({
       <div className="aspect-video bg-secondary flex items-center justify-center overflow-hidden relative">
         {channel.cover_image_url ? (
           <img 
-            src={channel.cover_image_url} 
+            src={optimizedImageUrl} 
             alt={channel.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
             loading="lazy"
-            width={320}
-            height={180}
+            width={400}
+            height={225}
+            decoding="async"
           />
         ) : (
           <div className="text-4xl">📺</div>
