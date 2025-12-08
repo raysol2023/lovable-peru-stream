@@ -50,75 +50,71 @@ export const mockProfiles: Profile[] = [
   { id: '4', name: 'Ana', avatar: '👧' },
 ];
 
-// 50 unique movie poster images from Unsplash
+// 50 poster-format images from Unsplash
 const MOVIE_IMAGES = [
-  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4',
-  'https://images.unsplash.com/photo-1514306191717-452ec28c7814',
-  'https://images.unsplash.com/photo-1526392060635-9d6019884377',
-  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba',
-  'https://images.unsplash.com/photo-1502680390469-be75c86b636f',
-  'https://images.unsplash.com/photo-1516298773066-c48f8e9bd92b',
-  'https://images.unsplash.com/photo-1536440136628-849c177e76a1',
-  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1',
-  'https://images.unsplash.com/photo-1485846234645-a62644f84728',
-  'https://images.unsplash.com/photo-1478720568477-152d9b164e26',
-  'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c',
-  'https://images.unsplash.com/photo-1594909122845-11baa439b7bf',
-  'https://images.unsplash.com/photo-1535016120720-40c646be5580',
-  'https://images.unsplash.com/photo-1574267432553-4b4628081c31',
-  'https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0',
-  'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0',
-  'https://images.unsplash.com/photo-1595769816263-9b910be24d5f',
-  'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0',
-  'https://images.unsplash.com/photo-1616530940355-351fabd9524b',
-  'https://images.unsplash.com/photo-1585951237318-9ea5e175b891',
-  'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5',
-  'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb',
-  'https://images.unsplash.com/photo-1542204165-65bf26472b9b',
-  'https://images.unsplash.com/photo-1533928298208-27ff66555d8d',
-  'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d',
-  'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4',
-  'https://images.unsplash.com/photo-1518929458119-e5bf444c30f4',
-  'https://images.unsplash.com/photo-1534447677768-be436bb09401',
-  'https://images.unsplash.com/photo-1501854140801-50d01698950b',
-  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05',
-  'https://images.unsplash.com/photo-1469474968028-56623f02e42e',
-  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d',
-  'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
-  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
-  'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb',
-  'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9',
-  'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86',
-  'https://images.unsplash.com/photo-1518495973542-4542c06a5843',
-  'https://images.unsplash.com/photo-1426604966848-d7adac402bff',
-  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429',
-  'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1',
-  'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8',
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
-  'https://images.unsplash.com/photo-1519046904884-53103b34b206',
-  'https://images.unsplash.com/photo-1505142468610-359e7d316be0',
-  'https://images.unsplash.com/photo-1559827260-dc66d52bef19',
-  'https://images.unsplash.com/photo-1544551763-46a013bb70d5',
-  'https://images.unsplash.com/photo-1518837695005-2083093ee35b',
-  'https://images.unsplash.com/photo-1583244685026-d8519b5e3d21',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1516298773066-c48f8e9bd92b?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1535016120720-40c646be5580?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1585951237318-9ea5e175b891?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1533928298208-27ff66555d8d?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1518929458119-e5bf444c30f4?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=500&h=750&fit=crop',
+  'https://images.unsplash.com/photo-1583244685026-d8519b5e3d21?w=500&h=750&fit=crop',
 ];
 
-// 50 unique movie titles
-const MOVIE_TITLES = [
-  'El Secreto de la Montaña', 'Lima Nocturna', 'Amor en Cusco', 'La Herencia',
-  'Surfistas del Pacífico', 'Misterios de la Selva', 'El Último Guerrero', 'Ciudad de Sombras',
-  'Corazón Andino', 'Furia Salvaje', 'El Código Inca', 'Noches de Fuego',
-  'La Conspiración', 'Viaje al Infinito', 'Destino Fatal', 'El Cazador',
-  'Amanecer Rojo', 'La Fortaleza', 'Secretos Oscuros', 'El Elegido',
-  'Tormenta de Arena', 'El Pacto', 'Más Allá del Horizonte', 'La Última Misión',
-  'Eclipse Total', 'El Vengador', 'Camino de Sangre', 'La Profecía',
-  'Frontera Perdida', 'El Despertar', 'Bajo la Luna', 'El Silencio',
-  'Cazadores de Sueños', 'La Rebelión', 'Tierra Salvaje', 'El Protector',
-  'Vuelo Nocturno', 'La Sombra del Pasado', 'Código Negro', 'El Rescate',
-  'Mar de Fuego', 'La Traición', 'Operación Trueno', 'El Último Vuelo',
-  'Sangre y Honor', 'La Venganza', 'Cielos Rojos', 'El Detective',
-  'Misión Imposible', 'La Huida'
+// Realistic movie title generator
+const TITLE_PREFIXES = [
+  'The Dark', 'Eternal', 'Silent', 'Crimson', 'Midnight', 'Golden', 'Shadow', 'Iron',
+  'Frozen', 'Burning', 'Rising', 'Fallen', 'Hidden', 'Lost', 'Wild', 'Sacred',
+  'Broken', 'Final', 'Secret', 'Ancient', 'Cyber', 'Neon', 'Crystal', 'Thunder'
+];
+
+const TITLE_SUFFIXES = [
+  'Protocol', 'Legacy', 'Horizon', 'Kingdom', 'Revenge', 'Awakening', 'Storm', 'Knight',
+  'Hunter', 'Empire', 'Rising', 'Genesis', 'Prophecy', 'Destiny', 'Legend', 'Chronicles',
+  'Mission', 'Warrior', 'Code', 'Dawn', 'Eclipse', 'Fury', 'Reckoning', 'Redemption'
 ];
 
 const GENRES_SET = [
@@ -137,37 +133,46 @@ const GENRES_SET = [
   ['Aventura', 'Histórico'], ['Ciencia Ficción', 'Distopía']
 ];
 
-// Seeded random for consistent but varied results
+// Seeded random for consistent results
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9999) * 10000;
   return x - Math.floor(x);
+}
+
+// Generate unique title from prefix + suffix
+function generateTitle(seed: number): string {
+  const prefixIndex = Math.floor(seededRandom(seed) * TITLE_PREFIXES.length);
+  const suffixIndex = Math.floor(seededRandom(seed * 2) * TITLE_SUFFIXES.length);
+  return `${TITLE_PREFIXES[prefixIndex]} ${TITLE_SUFFIXES[suffixIndex]}`;
 }
 
 // Generate unique movies for a category
 export function generateMovies(count: number, categorySeed: string): Title[] {
   const baseSeed = categorySeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const movies: Title[] = [];
-  const usedIndices = new Set<number>();
+  const usedTitles = new Set<string>();
   
   for (let i = 0; i < count; i++) {
     // Get unique image index
-    let imageIndex = Math.floor(seededRandom(baseSeed + i * 7) * MOVIE_IMAGES.length);
-    while (usedIndices.has(imageIndex) && usedIndices.size < MOVIE_IMAGES.length) {
-      imageIndex = (imageIndex + 1) % MOVIE_IMAGES.length;
+    const imageIndex = (baseSeed + i * 7) % MOVIE_IMAGES.length;
+    
+    // Generate unique title
+    let title = generateTitle(baseSeed + i * 13);
+    let attempt = 0;
+    while (usedTitles.has(title) && attempt < 20) {
+      title = generateTitle(baseSeed + i * 13 + attempt * 100);
+      attempt++;
     }
-    usedIndices.add(imageIndex);
+    usedTitles.add(title);
     
-    // Get title index with variation
-    const titleIndex = Math.floor(seededRandom(baseSeed + i * 13) * MOVIE_TITLES.length);
     const genreIndex = Math.floor(seededRandom(baseSeed + i * 17) * GENRES_SET.length);
-    
     const isSeries = seededRandom(baseSeed + i * 23) > 0.7;
     const year = 2020 + Math.floor(seededRandom(baseSeed + i * 29) * 5);
     const rating = Number((6.5 + seededRandom(baseSeed + i * 31) * 3).toFixed(1));
     
     movies.push({
       id: `${categorySeed}-${i}-${imageIndex}`,
-      title: MOVIE_TITLES[titleIndex],
+      title,
       type: isSeries ? 'series' : 'movie',
       thumbnail: MOVIE_IMAGES[imageIndex],
       banner: MOVIE_IMAGES[imageIndex],
@@ -183,14 +188,13 @@ export function generateMovies(count: number, categorySeed: string): Title[] {
   return movies;
 }
 
-// Pre-generated category arrays with unique content
+// Pre-generated category arrays
 export const trendingMovies = generateMovies(30, 'trending');
 export const recommendedMovies = generateMovies(30, 'recommended');
 export const actionMovies = generateMovies(30, 'action');
 export const dramaMovies = generateMovies(30, 'drama');
 export const comedyMovies = generateMovies(30, 'comedy');
 
-// Original mockTitles for compatibility
 export const mockTitles: Title[] = generateMovies(30, 'general');
 
 export const mockChannels: Channel[] = [
@@ -245,12 +249,7 @@ export const mockPlans: Plan[] = [
     id: 'basic',
     name: 'Básico',
     price: 'S/ 19.90',
-    features: [
-      'Catálogo completo',
-      'Calidad HD (720p)',
-      '1 dispositivo simultáneo',
-      'Descargas limitadas',
-    ],
+    features: ['Catálogo completo', 'Calidad HD (720p)', '1 dispositivo simultáneo', 'Descargas limitadas'],
     devices: 1,
     quality: 'HD',
   },
@@ -258,12 +257,7 @@ export const mockPlans: Plan[] = [
     id: 'standard',
     name: 'Estándar',
     price: 'S/ 24.90',
-    features: [
-      'Catálogo completo',
-      'Calidad Full HD (1080p)',
-      '2 dispositivos simultáneos',
-      'Descargas ilimitadas',
-    ],
+    features: ['Catálogo completo', 'Calidad Full HD (1080p)', '2 dispositivos simultáneos', 'Descargas ilimitadas'],
     devices: 2,
     quality: 'Full HD',
   },
@@ -271,13 +265,7 @@ export const mockPlans: Plan[] = [
     id: 'premium',
     name: 'Premium',
     price: 'S/ 29.90',
-    features: [
-      'Catálogo completo',
-      'Calidad 4K Ultra HD',
-      '4 dispositivos simultáneos',
-      'Descargas ilimitadas',
-      'Audio espacial',
-    ],
+    features: ['Catálogo completo', 'Calidad 4K Ultra HD', '4 dispositivos simultáneos', 'Descargas ilimitadas', 'Audio espacial'],
     devices: 4,
     quality: '4K',
   },
