@@ -57,6 +57,12 @@ const FEATURED_CONTENT = [
   },
 ];
 
+// Generate 30 items for the trending strip
+const TRENDING_ITEMS = Array.from({ length: 30 }, (_, i) => ({
+  ...FEATURED_CONTENT[i % FEATURED_CONTENT.length],
+  id: `trending-${i}`,
+}));
+
 interface HeroBannerProps {
   title?: Content;
 }
@@ -212,10 +218,12 @@ export function HeroBanner({ title }: HeroBannerProps) {
 
       {/* === LAYER 3: Bottom Thumbnail Strip (Static - doesn't rotate) === */}
       <div className="group/strip absolute bottom-0 left-0 w-full z-30 px-6 sm:px-8 lg:px-12 pb-6">
-        {/* Section Title */}
-        <p className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">
-          Tendencias Ahora
-        </p>
+        {/* Section Title - Always visible */}
+        <div className="relative mb-3">
+          <p className="text-[11px] font-bold text-gray-200 uppercase tracking-widest drop-shadow-md">
+            Tendencias Ahora
+          </p>
+        </div>
 
         {/* Scroll Container with Navigation */}
         <div className="relative">
@@ -228,20 +236,20 @@ export function HeroBanner({ title }: HeroBannerProps) {
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
 
-          {/* Thumbnails */}
+          {/* Thumbnails - Using TRENDING_ITEMS (30 items) */}
           <div 
             ref={scrollContainerRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth"
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {items.map((item, idx) => (
+            {TRENDING_ITEMS.map((item, idx) => (
               <button
                 key={item.id}
-                onClick={() => handleThumbnailClick(idx)}
+                onClick={() => handleThumbnailClick(idx % items.length)}
                 className={cn(
-                  "group relative flex-shrink-0 w-40 aspect-video rounded-lg overflow-hidden transition-all duration-300",
+                  "group relative flex-shrink-0 w-64 aspect-video rounded-lg overflow-hidden transition-all duration-300",
                   "border hover:border-white hover:scale-105 cursor-pointer",
-                  idx === currentIndex 
+                  (idx % items.length) === currentIndex 
                     ? "border-white opacity-100 scale-105 ring-2 ring-white/50" 
                     : "border-transparent opacity-70 hover:opacity-100"
                 )}
@@ -257,21 +265,21 @@ export function HeroBanner({ title }: HeroBannerProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 
                 {/* Title */}
-                <div className="absolute bottom-0 left-0 right-0 p-2">
-                  <p className="text-[10px] text-white font-medium truncate">
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <p className="text-xs text-white font-medium truncate">
                     {item.title}
                   </p>
                 </div>
 
                 {/* Play icon on hover */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Play className="w-4 h-4 text-white fill-current" />
+                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Play className="w-5 h-5 text-white fill-current" />
                   </div>
                 </div>
 
                 {/* Active indicator */}
-                {idx === currentIndex && (
+                {(idx % items.length) === currentIndex && (
                   <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
                 )}
               </button>
