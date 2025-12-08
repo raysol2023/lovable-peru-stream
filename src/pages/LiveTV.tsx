@@ -1,16 +1,61 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Play, RotateCcw, Loader2, Crown } from 'lucide-react';
-import { useLiveChannels } from '@/hooks/useLiveChannels';
+import { useLiveChannels, LiveChannel } from '@/hooks/useLiveChannels';
 import { useEPG } from '@/hooks/useEPG';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+
+// Memoized Channel Card Component
+const ChannelCard = memo(function ChannelCard({
+  channel,
+  onClick,
+}: {
+  channel: LiveChannel;
+  onClick: (id: string) => void;
+}) {
+  return (
+    <div
+      onClick={() => onClick(channel.id)}
+      className="bg-card rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-glow hover:scale-105 animate-fade-in group"
+    >
+      <div className="aspect-video bg-secondary flex items-center justify-center overflow-hidden relative">
+        {channel.cover_image_url ? (
+          <img 
+            src={channel.cover_image_url} 
+            alt={channel.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+            loading="lazy"
+            width={320}
+            height={180}
+          />
+        ) : (
+          <div className="text-4xl">📺</div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="absolute bottom-2 left-2 right-2">
+          <span className="text-xs bg-red-500 text-white px-2 py-1 rounded">EN VIVO</span>
+        </div>
+      </div>
+      <div className="p-4">
+        <h3 className="font-semibold mb-1">{channel.title}</h3>
+        {channel.current_program && (
+          <p className="text-xs text-muted-foreground mb-2">{channel.current_program.title}</p>
+        )}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>Ver Programación</span>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 const LiveTV = () => {
   const navigate = useNavigate();
@@ -45,19 +90,22 @@ const LiveTV = () => {
     });
   }, []);
 
-  const selectedChannelData = channels?.find(c => c.id === selectedChannel);
+  const selectedChannelData = useMemo(() => 
+    channels?.find(c => c.id === selectedChannel),
+    [channels, selectedChannel]
+  );
 
-  const formatTime = (dateString: string) => {
+  const formatTime = useCallback((dateString: string) => {
     return format(new Date(dateString), 'HH:mm', { locale: es });
-  };
+  }, []);
 
-  const formatDuration = (minutes: number) => {
+  const formatDuration = useCallback((minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+  }, []);
 
-  const handlePlayChannel = () => {
+  const handlePlayChannel = useCallback(() => {
     if (hasVODOnlyPlan) {
       setShowUpgradeDialog(true);
       return;
@@ -65,9 +113,9 @@ const LiveTV = () => {
     if (selectedChannel) {
       navigate(`/watch/${selectedChannel}`);
     }
-  };
+  }, [hasVODOnlyPlan, selectedChannel, navigate]);
 
-  const handlePlayProgram = (programId: string, fromStart: boolean = false) => {
+  const handlePlayProgram = useCallback((programId: string, fromStart: boolean = false) => {
     if (hasVODOnlyPlan) {
       setShowUpgradeDialog(true);
       return;
@@ -75,23 +123,23 @@ const LiveTV = () => {
     if (selectedChannel) {
       navigate(`/watch/${selectedChannel}${fromStart ? '?from_start=true' : ''}`);
     }
-  };
+  }, [hasVODOnlyPlan, selectedChannel, navigate]);
 
-  const handleChannelClick = (channelId: string) => {
+  const handleChannelClick = useCallback((channelId: string) => {
     if (hasVODOnlyPlan) {
       setShowUpgradeDialog(true);
       return;
     }
     setSelectedChannel(channelId);
-  };
+  }, [hasVODOnlyPlan]);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = useCallback(() => {
     navigate('/account');
     toast({
       title: "Actualiza tu plan",
       description: "Elige un plan VOD + TV para disfrutar de TV en vivo",
     });
-  };
+  }, [navigate, toast]);
 
   if (channelsLoading) {
     return (
@@ -115,37 +163,11 @@ const LiveTV = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {channels.map((channel) => (
-              <div
+              <ChannelCard 
                 key={channel.id}
-                onClick={() => handleChannelClick(channel.id)}
-                className="bg-card rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-glow hover:scale-105 animate-fade-in group"
-              >
-                <div className="aspect-video bg-secondary flex items-center justify-center overflow-hidden relative">
-                  {channel.cover_image_url ? (
-                    <img 
-                      src={channel.cover_image_url} 
-                      alt={channel.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                    />
-                  ) : (
-                    <div className="text-4xl">📺</div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <span className="text-xs bg-red-500 text-white px-2 py-1 rounded">EN VIVO</span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-1">{channel.title}</h3>
-                  {channel.current_program && (
-                    <p className="text-xs text-muted-foreground mb-2">{channel.current_program.title}</p>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>Ver Programación</span>
-                  </div>
-                </div>
-              </div>
+                channel={channel}
+                onClick={handleChannelClick}
+              />
             ))}
           </div>
         )}
@@ -160,6 +182,9 @@ const LiveTV = () => {
                       src={selectedChannelData.cover_image_url} 
                       alt=""
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded object-cover"
+                      loading="lazy"
+                      width={40}
+                      height={40}
                     />
                   )}
                   <span className="text-lg sm:text-xl">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import Hls from 'hls.js';
 import { Button } from './ui/button';
 import { Play, Pause, Volume2, VolumeX, Maximize, Settings, ChevronLeft } from 'lucide-react';
@@ -17,6 +17,149 @@ interface VideoPlayerProps {
   currentProgramTitle?: string;
   onBack?: () => void;
 }
+
+// Memoized Header Component - prevents re-render on time updates
+const PlayerHeader = memo(function PlayerHeader({
+  showControls,
+  onBack,
+  currentProgramTitle,
+  channelTitle,
+}: {
+  showControls: boolean;
+  onBack?: () => void;
+  currentProgramTitle?: string;
+  channelTitle?: string;
+}) {
+  return (
+    <div 
+      className={cn(
+        "absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 transition-opacity duration-300 z-20",
+        showControls ? "opacity-100" : "opacity-0"
+      )}
+    >
+      <div className="flex items-center gap-3">
+        {onBack && (
+          <Button
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBack();
+            }}
+            className="bg-transparent hover:bg-white/10 rounded-full"
+            variant="ghost"
+          >
+            <ChevronLeft className="h-6 w-6 text-white" />
+          </Button>
+        )}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-white text-xl font-semibold">
+            {currentProgramTitle || channelTitle || 'En Vivo'}
+          </h1>
+          {currentProgramTitle && channelTitle && (
+            <Badge variant="destructive" className="w-fit text-xs">
+              {channelTitle}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// Memoized Volume Slider Component
+const VolumeControl = memo(function VolumeControl({
+  volume,
+  isMuted,
+  onVolumeChange,
+  onToggleMute,
+}: {
+  volume: number;
+  isMuted: boolean;
+  onVolumeChange: (values: number[]) => void;
+  onToggleMute: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 group/volume">
+      <Button
+        size="icon"
+        onClick={onToggleMute}
+        className="bg-transparent hover:bg-white/10"
+        variant="ghost"
+      >
+        {isMuted || volume === 0 ? (
+          <VolumeX className="h-5 w-5 text-white" />
+        ) : (
+          <Volume2 className="h-5 w-5 text-white" />
+        )}
+      </Button>
+      <div className="w-0 group-hover/volume:w-20 transition-all duration-200 overflow-hidden">
+        <Slider
+          value={[isMuted ? 0 : volume]}
+          min={0}
+          max={1}
+          step={0.01}
+          onValueChange={onVolumeChange}
+          className="w-20"
+        />
+      </div>
+    </div>
+  );
+});
+
+// Memoized Quality Settings Component
+const QualitySettings = memo(function QualitySettings({
+  qualities,
+  currentQuality,
+  onChangeQuality,
+}: {
+  qualities: Array<{ height: number; index: number }>;
+  currentQuality: number;
+  onChangeQuality: (levelIndex: number) => void;
+}) {
+  if (qualities.length === 0) return null;
+  
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          size="icon"
+          className="bg-transparent hover:bg-white/10"
+          variant="ghost"
+        >
+          <Settings className="h-5 w-5 text-white" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 bg-black/95 border-white/20 text-white">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold mb-2">Calidad</p>
+          <Button
+            onClick={() => onChangeQuality(-1)}
+            variant="ghost"
+            className={cn(
+              "w-full justify-start text-sm",
+              currentQuality === -1 && "bg-white/20"
+            )}
+          >
+            Auto
+          </Button>
+          {qualities.map((quality) => (
+            <Button
+              key={quality.index}
+              onClick={() => onChangeQuality(quality.index)}
+              variant="ghost"
+              className={cn(
+                "w-full justify-start text-sm",
+                currentQuality === quality.index && "bg-white/20"
+              )}
+            >
+              {quality.height}p
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+});
 
 export function VideoPlayer({ 
   manifestUrl, 
@@ -42,6 +185,85 @@ export function VideoPlayer({
   const [qualities, setQualities] = useState<Array<{ height: number; index: number }>>([]);
   const [currentQuality, setCurrentQuality] = useState<number>(-1);
   const [showCenterPlayPause, setShowCenterPlayPause] = useState(false);
+
+  // Memoized callbacks to prevent child re-renders
+  const togglePlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  }, []);
+
+  const handleVolumeChange = useCallback((values: number[]) => {
+    const newVolume = values[0];
+    setVolume(newVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume;
+    }
+    setIsMuted(newVolume === 0);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    if (videoRef.current) {
+      if (isMuted) {
+        videoRef.current.volume = volume || 0.5;
+        setIsMuted(false);
+        if (volume === 0) setVolume(0.5);
+      } else {
+        videoRef.current.volume = 0;
+        setIsMuted(true);
+      }
+    }
+  }, [isMuted, volume]);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  }, []);
+
+  const changeQuality = useCallback((levelIndex: number) => {
+    if (hlsRef.current) {
+      hlsRef.current.currentLevel = levelIndex;
+    }
+  }, []);
+
+  const goToLive = useCallback(() => {
+    const video = videoRef.current;
+    const hls = hlsRef.current;
+    
+    if (video && hls && isLive) {
+      const duration = video.duration;
+      if (duration && isFinite(duration)) {
+        video.currentTime = duration;
+      }
+    }
+  }, [isLive]);
+
+  const handleVideoClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-controls]')) return;
+    
+    togglePlay();
+    setShowCenterPlayPause(true);
+    setTimeout(() => setShowCenterPlayPause(false), 600);
+  }, [togglePlay]);
+
+  const handleDoubleClick = useCallback(() => {
+    toggleFullscreen();
+  }, [toggleFullscreen]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -151,11 +373,12 @@ export function VideoPlayer({
     };
   }, [manifestUrl, autoPlay]);
 
-  // Video event listeners
+  // Video event listeners - optimized to not cause re-renders
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Use refs for callbacks to avoid re-renders
     const handleTimeUpdate = () => {
       onTimeUpdate?.(video.currentTime);
     };
@@ -190,91 +413,33 @@ export function VideoPlayer({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
+  // Memoized center play/pause indicator
+  const centerPlayPauseIndicator = useMemo(() => {
+    if (!showCenterPlayPause) return null;
+    return (
+      <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
+        <div className="rounded-full bg-black/60 backdrop-blur-sm p-8">
+          {isPlaying ? (
+            <Pause className="h-16 w-16 text-white" fill="white" />
+          ) : (
+            <Play className="h-16 w-16 text-white" fill="white" />
+          )}
+        </div>
+      </div>
+    );
+  }, [showCenterPlayPause, isPlaying]);
 
-    if (video.paused) {
-      video.play();
-    } else {
-      video.pause();
-    }
-  };
-
-  const handleVolumeChange = (values: number[]) => {
-    const newVolume = values[0];
-    setVolume(newVolume);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-    }
-    setIsMuted(newVolume === 0);
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      if (isMuted) {
-        videoRef.current.volume = volume || 0.5;
-        setIsMuted(false);
-        if (volume === 0) setVolume(0.5);
-      } else {
-        videoRef.current.volume = 0;
-        setIsMuted(true);
-      }
-    }
-  };
-
-  const toggleFullscreen = async () => {
-    if (!containerRef.current) return;
-
-    try {
-      if (!document.fullscreenElement) {
-        await containerRef.current.requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch (err) {
-      console.error('Fullscreen error:', err);
-    }
-  };
-
-  const handleVideoClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Prevent click if clicking on controls
-    const target = e.target as HTMLElement;
-    if (target.closest('[data-controls]')) return;
-    
-    togglePlay();
-    setShowCenterPlayPause(true);
-    setTimeout(() => setShowCenterPlayPause(false), 600);
-  };
-
-  const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    
-    const clickX = e.clientX - rect.left;
-    const isLeftSide = clickX < rect.width / 2;
-    
-    toggleFullscreen();
-  };
-
-  const goToLive = () => {
-    const video = videoRef.current;
-    const hls = hlsRef.current;
-    
-    if (video && hls && isLive) {
-      // For live streams, seek to the live edge
-      const duration = video.duration;
-      if (duration && isFinite(duration)) {
-        video.currentTime = duration;
-      }
-    }
-  };
-
-  const changeQuality = (levelIndex: number) => {
-    if (hlsRef.current) {
-      hlsRef.current.currentLevel = levelIndex;
-    }
-  };
+  // Memoized paused overlay
+  const pausedOverlay = useMemo(() => {
+    if (isPlaying || showCenterPlayPause) return null;
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors z-10 pointer-events-none">
+        <div className="rounded-full bg-background/20 backdrop-blur-sm p-6">
+          <Play className="h-12 w-12 text-white" fill="white" />
+        </div>
+      </div>
+    );
+  }, [isPlaying, showCenterPlayPause]);
 
   if (error) {
     return (
@@ -300,61 +465,19 @@ export function VideoPlayer({
         playsInline
       />
       
-      {/* Disney+ Style Header */}
-      <div 
-        className={cn(
-          "absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 transition-opacity duration-300 z-20",
-          showControls ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <div className="flex items-center gap-3">
-          {onBack && (
-            <Button
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onBack();
-              }}
-              className="bg-transparent hover:bg-white/10 rounded-full"
-              variant="ghost"
-            >
-              <ChevronLeft className="h-6 w-6 text-white" />
-            </Button>
-          )}
-          <div className="flex flex-col gap-1">
-            <h1 className="text-white text-xl font-semibold">
-              {currentProgramTitle || channelTitle || 'En Vivo'}
-            </h1>
-            {currentProgramTitle && channelTitle && (
-              <Badge variant="destructive" className="w-fit text-xs">
-                {channelTitle}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Disney+ Style Header - Memoized */}
+      <PlayerHeader 
+        showControls={showControls}
+        onBack={onBack}
+        currentProgramTitle={currentProgramTitle}
+        channelTitle={channelTitle}
+      />
 
-      {/* Center Play/Pause Icon */}
-      {showCenterPlayPause && (
-        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
-          <div className="rounded-full bg-black/60 backdrop-blur-sm p-8">
-            {isPlaying ? (
-              <Pause className="h-16 w-16 text-white" fill="white" />
-            ) : (
-              <Play className="h-16 w-16 text-white" fill="white" />
-            )}
-          </div>
-        </div>
-      )}
+      {/* Center Play/Pause Icon - Memoized */}
+      {centerPlayPauseIndicator}
       
-      {/* Center Play Button (when paused) */}
-      {!isPlaying && !showCenterPlayPause && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors z-10 pointer-events-none">
-          <div className="rounded-full bg-background/20 backdrop-blur-sm p-6">
-            <Play className="h-12 w-12 text-white" fill="white" />
-          </div>
-        </div>
-      )}
+      {/* Center Play Button (when paused) - Memoized */}
+      {pausedOverlay}
 
       {/* Live Progress Bar (non-navigable) */}
       {isLive && (
@@ -406,76 +529,20 @@ export function VideoPlayer({
             )}
           </div>
 
-          {/* Right Controls */}
+          {/* Right Controls - Memoized children */}
           <div className="flex items-center gap-3">
-            {/* Volume Control */}
-            <div className="flex items-center gap-2 group/volume">
-              <Button
-                size="icon"
-                onClick={toggleMute}
-                className="bg-transparent hover:bg-white/10"
-                variant="ghost"
-              >
-                {isMuted || volume === 0 ? (
-                  <VolumeX className="h-5 w-5 text-white" />
-                ) : (
-                  <Volume2 className="h-5 w-5 text-white" />
-                )}
-              </Button>
-              <div className="w-0 group-hover/volume:w-20 transition-all duration-200 overflow-hidden">
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={handleVolumeChange}
-                  className="w-20"
-                />
-              </div>
-            </div>
+            <VolumeControl 
+              volume={volume}
+              isMuted={isMuted}
+              onVolumeChange={handleVolumeChange}
+              onToggleMute={toggleMute}
+            />
 
-            {/* Quality Settings */}
-            {qualities.length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="icon"
-                    className="bg-transparent hover:bg-white/10"
-                    variant="ghost"
-                  >
-                    <Settings className="h-5 w-5 text-white" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48 bg-black/95 border-white/20 text-white">
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold mb-2">Calidad</p>
-                    <Button
-                      onClick={() => changeQuality(-1)}
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start text-sm",
-                        currentQuality === -1 && "bg-white/20"
-                      )}
-                    >
-                      Auto
-                    </Button>
-                    {qualities.map((quality) => (
-                      <Button
-                        key={quality.index}
-                        onClick={() => changeQuality(quality.index)}
-                        variant="ghost"
-                        className={cn(
-                          "w-full justify-start text-sm",
-                          currentQuality === quality.index && "bg-white/20"
-                        )}
-                      >
-                        {quality.height}p
-                      </Button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
+            <QualitySettings
+              qualities={qualities}
+              currentQuality={currentQuality}
+              onChangeQuality={changeQuality}
+            />
 
             {/* Fullscreen */}
             <Button

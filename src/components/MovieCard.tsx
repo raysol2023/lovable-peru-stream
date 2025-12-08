@@ -24,6 +24,9 @@ export function MovieCard({ title }: MovieCardProps) {
           alt={title.title}
           className="w-full h-56 sm:h-64 md:h-72 object-cover transition-transform duration-300"
           loading="lazy"
+          width={192}
+          height={288}
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300" />
         
