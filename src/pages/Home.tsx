@@ -68,24 +68,17 @@ export default function Home() {
       <Navbar />
       <div className="pt-16">
         {/* Hero Banner */}
-        <div className="relative z-0">
-          <HeroBanner title={featuredTitle} />
-        </div>
+        <HeroBanner title={featuredTitle} />
         
-        {/* Content Sections - Overlaps Hero, isolated stacking context per row */}
-        <div className="-mt-24 relative z-10 bg-transparent pb-16">
-          {carousels.map((carousel, index) => 
+        {/* Content Sections - proper spacing, no overlap */}
+        <div className="-mt-16 relative z-10 pb-16 space-y-2">
+          {carousels.map((carousel) => 
             carousel.content.length > 0 && (
-              <div 
+              <Carousel 
                 key={carousel.category} 
-                className="relative"
-                style={{ zIndex: carousels.length - index }}
-              >
-                <Carousel 
-                  title={carousel.title} 
-                  titles={carousel.content} 
-                />
-              </div>
+                title={carousel.title} 
+                titles={carousel.content} 
+              />
             )
           )}
         </div>

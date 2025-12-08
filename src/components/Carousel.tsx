@@ -56,28 +56,28 @@ export function Carousel({ title, titles }: CarouselProps) {
   }
 
   return (
-    <div className="-my-8">
-      {/* Section Title */}
-      <h2 className="text-2xl font-bold text-gray-100 mb-0 ml-12 drop-shadow-lg tracking-tight relative z-10">
+    <div className="relative">
+      {/* Section Title - positioned above the scroll area */}
+      <h2 className="text-2xl font-bold text-gray-100 ml-12 drop-shadow-lg tracking-tight relative z-10 mb-2">
         {title}
       </h2>
       
-      {/* Carousel Container */}
-      <div className="relative group/carousel">
-        {/* Left Arrow - Lower z-index than hovering cards */}
+      {/* Carousel Container - clip only horizontal, allow vertical overflow */}
+      <div className="relative group/carousel" style={{ clipPath: 'inset(-100px 0)' }}>
+        {/* Left Arrow */}
         <Button
           variant="ghost"
           size="icon"
-          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-40 h-[calc(100%-6rem)] w-14 rounded-none bg-black/60 hover:bg-black/90 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
+          className="hidden md:flex absolute left-0 top-0 bottom-0 z-40 w-12 rounded-none bg-black/60 hover:bg-black/90 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
           onClick={() => scroll('left')}
         >
-          <ChevronLeft className="h-12 w-12 text-white" />
+          <ChevronLeft className="h-10 w-10 text-white" />
         </Button>
         
-        {/* Scrollable Content - py-12 creates safe space for hover popup */}
+        {/* Scrollable Content - padding for hover space, hidden scrollbar */}
         <div 
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto overflow-y-visible py-12 px-12 scrollbar-hide select-none scroll-smooth"
+          className="flex gap-3 overflow-x-auto overflow-y-visible py-4 px-12 scrollbar-hide select-none scroll-smooth"
           style={{ 
             scrollbarWidth: 'none', 
             msOverflowStyle: 'none',
@@ -92,14 +92,14 @@ export function Carousel({ title, titles }: CarouselProps) {
           ))}
         </div>
         
-        {/* Right Arrow - Lower z-index than hovering cards */}
+        {/* Right Arrow */}
         <Button
           variant="ghost"
           size="icon"
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-40 h-[calc(100%-6rem)] w-14 rounded-none bg-black/60 hover:bg-black/90 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
+          className="hidden md:flex absolute right-0 top-0 bottom-0 z-40 w-12 rounded-none bg-black/60 hover:bg-black/90 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
           onClick={() => scroll('right')}
         >
-          <ChevronRight className="h-12 w-12 text-white" />
+          <ChevronRight className="h-10 w-10 text-white" />
         </Button>
       </div>
     </div>
