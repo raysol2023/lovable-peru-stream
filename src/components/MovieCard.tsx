@@ -18,11 +18,11 @@ export function MovieCard({ title, priority = false }: MovieCardProps) {
 
   return (
     <div 
-      className="relative w-[160px] sm:w-[180px] md:w-[200px] aspect-[2/3] flex-shrink-0 transition-all duration-300 ease-in-out cursor-pointer group hover:scale-125 hover:z-[999] origin-center"
-      style={{ willChange: 'transform' }}
+      className="relative w-[140px] sm:w-[160px] md:w-[180px] aspect-[2/3] flex-shrink-0 transition-transform duration-300 ease-out cursor-pointer group hover:scale-110 hover:z-[999]"
+      style={{ transformOrigin: 'center center' }}
     >
-      {/* Base Card - Clean poster */}
-      <div className="relative w-full h-full rounded-md overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:shadow-black/80 transition-shadow duration-300">
+      {/* Base Card */}
+      <div className="relative w-full h-full rounded-md overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:shadow-black/70 transition-shadow duration-300">
         {/* Poster Image */}
         <img 
           src={optimizedImageUrl} 
@@ -34,63 +34,56 @@ export function MovieCard({ title, priority = false }: MovieCardProps) {
           decoding="async"
         />
 
-        {/* Hover Overlay - Only visible on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Content on Hover */}
         <div className="absolute inset-0 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {/* Title & Category */}
-          <div className="px-3 pb-14">
-            <h3 className="text-white font-bold text-sm leading-tight line-clamp-2 drop-shadow-lg">
+          {/* Title */}
+          <div className="px-2 pb-12">
+            <h3 className="text-white font-bold text-xs leading-tight line-clamp-2 drop-shadow-lg">
               {title.title}
             </h3>
-            {title.category?.[0] && (
-              <p className="text-xs text-gray-300 mt-1">{title.category[0]}</p>
-            )}
           </div>
 
           {/* Control Bar */}
-          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900 p-3 rounded-b-md">
+          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900/95 p-2 rounded-b-md">
             <div className="flex items-center justify-between gap-1">
-              {/* Play Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/watch/${title.id}`);
                 }}
-                className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-gray-200 transition-colors shadow-md"
+                className="w-7 h-7 rounded-full bg-white flex items-center justify-center hover:bg-gray-200 transition-colors"
                 aria-label="Reproducir"
               >
-                <Play className="w-5 h-5 text-black fill-current ml-0.5" />
+                <Play className="w-4 h-4 text-black fill-current ml-0.5" />
               </button>
 
-              {/* Secondary Actions */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-full border-2 border-gray-500 flex items-center justify-center hover:border-white hover:bg-white/10 transition-all"
-                  aria-label="Añadir a mi lista"
+                  className="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center hover:border-white transition-colors"
+                  aria-label="Añadir"
                 >
-                  <Plus className="w-4 h-4 text-white" />
+                  <Plus className="w-3 h-3 text-white" />
                 </button>
-
                 <button
                   onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-full border-2 border-gray-500 flex items-center justify-center hover:border-white hover:bg-white/10 transition-all"
+                  className="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center hover:border-white transition-colors"
                   aria-label="Me gusta"
                 >
-                  <ThumbsUp className="w-4 h-4 text-white" />
+                  <ThumbsUp className="w-3 h-3 text-white" />
                 </button>
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/title/${title.id}`);
                   }}
-                  className="w-8 h-8 rounded-full border-2 border-gray-500 flex items-center justify-center hover:border-white hover:bg-white/10 transition-all"
-                  aria-label="Más información"
+                  className="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center hover:border-white transition-colors"
+                  aria-label="Más info"
                 >
-                  <ChevronDown className="w-4 h-4 text-white" />
+                  <ChevronDown className="w-3 h-3 text-white" />
                 </button>
               </div>
             </div>
