@@ -69,8 +69,8 @@ export default function Home() {
       <div className="pt-16">
         <HeroBanner title={featuredTitle} />
         
-        {/* Content Sections - Consistent spacing with Hero */}
-        <div className="-mt-24 relative z-10 pb-16">
+        {/* Content Sections - Overlaps Hero with z-index for clickability */}
+        <div className="-mt-32 relative z-20 pb-8">
           {carousels.map((carousel) => 
             carousel.content.length > 0 && (
               <Carousel 

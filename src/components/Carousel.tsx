@@ -57,19 +57,19 @@ export function Carousel({ title, titles }: CarouselProps) {
   }
 
   return (
-    <div className="mb-10 md:mb-12">
-      {/* Section Title - Netflix style */}
-      <h2 className="text-xl md:text-2xl font-bold text-gray-100 mb-3 ml-12 drop-shadow-sm tracking-tight">
+    <div className="mb-4 md:mb-6">
+      {/* Section Title - Netflix style hierarchy */}
+      <h2 className="text-2xl font-semibold text-white mb-2 pl-12 drop-shadow-md tracking-tight">
         {title}
       </h2>
       
       {/* Carousel Container */}
       <div className="relative group/carousel">
-        {/* Left Arrow */}
+        {/* Left Arrow - z-30 so cards on hover (z-50) appear above */}
         <Button
           variant="ghost"
           size="icon"
-          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-40 h-full w-12 rounded-none bg-black/40 hover:bg-black/70 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
+          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-30 h-full w-12 rounded-none bg-black/40 hover:bg-black/70 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
           onClick={() => scroll('left')}
         >
           <ChevronLeft className="h-10 w-10 text-white" />
@@ -78,7 +78,7 @@ export function Carousel({ title, titles }: CarouselProps) {
         {/* Scrollable Content */}
         <div 
           ref={scrollRef}
-          className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-12 py-8 scroll-smooth"
+          className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-12 py-6 scroll-smooth"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {extendedContent.map((item, index) => (
@@ -90,11 +90,11 @@ export function Carousel({ title, titles }: CarouselProps) {
           ))}
         </div>
         
-        {/* Right Arrow */}
+        {/* Right Arrow - z-30 so cards on hover (z-50) appear above */}
         <Button
           variant="ghost"
           size="icon"
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-40 h-full w-12 rounded-none bg-black/40 hover:bg-black/70 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
+          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-30 h-full w-12 rounded-none bg-black/40 hover:bg-black/70 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200"
           onClick={() => scroll('right')}
         >
           <ChevronRight className="h-10 w-10 text-white" />
