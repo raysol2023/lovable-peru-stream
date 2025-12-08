@@ -70,8 +70,8 @@ export default function Home() {
         {/* Hero Banner */}
         <HeroBanner title={featuredTitle} />
         
-        {/* Content Sections - proper spacing, no overlap */}
-        <div className="-mt-16 relative z-10 pb-16 space-y-2">
+        {/* Content Sections - Clear separation from Hero */}
+        <div className="mt-8 pb-16">
           {carousels.map((carousel) => 
             carousel.content.length > 0 && (
               <Carousel 
