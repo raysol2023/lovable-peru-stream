@@ -50,7 +50,7 @@ export const mockProfiles: Profile[] = [
   { id: '4', name: 'Ana', avatar: '👧' },
 ];
 
-// 30 unique movie poster images from Unsplash
+// 50 unique movie poster images from Unsplash
 const MOVIE_IMAGES = [
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4',
   'https://images.unsplash.com/photo-1514306191717-452ec28c7814',
@@ -82,9 +82,29 @@ const MOVIE_IMAGES = [
   'https://images.unsplash.com/photo-1518929458119-e5bf444c30f4',
   'https://images.unsplash.com/photo-1534447677768-be436bb09401',
   'https://images.unsplash.com/photo-1501854140801-50d01698950b',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e',
+  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
+  'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb',
+  'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9',
+  'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86',
+  'https://images.unsplash.com/photo-1518495973542-4542c06a5843',
+  'https://images.unsplash.com/photo-1426604966848-d7adac402bff',
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429',
+  'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1',
+  'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+  'https://images.unsplash.com/photo-1519046904884-53103b34b206',
+  'https://images.unsplash.com/photo-1505142468610-359e7d316be0',
+  'https://images.unsplash.com/photo-1559827260-dc66d52bef19',
+  'https://images.unsplash.com/photo-1544551763-46a013bb70d5',
+  'https://images.unsplash.com/photo-1518837695005-2083093ee35b',
+  'https://images.unsplash.com/photo-1583244685026-d8519b5e3d21',
 ];
 
-// 30 unique movie titles
+// 50 unique movie titles
 const MOVIE_TITLES = [
   'El Secreto de la Montaña', 'Lima Nocturna', 'Amor en Cusco', 'La Herencia',
   'Surfistas del Pacífico', 'Misterios de la Selva', 'El Último Guerrero', 'Ciudad de Sombras',
@@ -93,7 +113,12 @@ const MOVIE_TITLES = [
   'Amanecer Rojo', 'La Fortaleza', 'Secretos Oscuros', 'El Elegido',
   'Tormenta de Arena', 'El Pacto', 'Más Allá del Horizonte', 'La Última Misión',
   'Eclipse Total', 'El Vengador', 'Camino de Sangre', 'La Profecía',
-  'Frontera Perdida', 'El Despertar'
+  'Frontera Perdida', 'El Despertar', 'Bajo la Luna', 'El Silencio',
+  'Cazadores de Sueños', 'La Rebelión', 'Tierra Salvaje', 'El Protector',
+  'Vuelo Nocturno', 'La Sombra del Pasado', 'Código Negro', 'El Rescate',
+  'Mar de Fuego', 'La Traición', 'Operación Trueno', 'El Último Vuelo',
+  'Sangre y Honor', 'La Venganza', 'Cielos Rojos', 'El Detective',
+  'Misión Imposible', 'La Huida'
 ];
 
 const GENRES_SET = [
@@ -104,23 +129,69 @@ const GENRES_SET = [
   ['Drama', 'Histórico'], ['Acción', 'Ciencia Ficción'], ['Thriller', 'Misterio'], ['Drama', 'Suspenso'],
   ['Aventura', 'Acción'], ['Misterio', 'Drama'], ['Ciencia Ficción', 'Drama'], ['Acción', 'Misterio'],
   ['Thriller', 'Drama'], ['Acción', 'Revenge'], ['Crimen', 'Drama'], ['Misterio', 'Sobrenatural'],
-  ['Aventura', 'Drama'], ['Drama', 'Psicológico']
+  ['Aventura', 'Drama'], ['Drama', 'Psicológico'], ['Terror', 'Suspenso'], ['Comedia', 'Aventura'],
+  ['Romance', 'Drama'], ['Fantasía', 'Aventura'], ['Acción', 'Comedia'], ['Drama', 'Bélico'],
+  ['Thriller', 'Acción'], ['Ciencia Ficción', 'Terror'], ['Aventura', 'Fantasía'], ['Drama', 'Musical'],
+  ['Acción', 'Espías'], ['Comedia', 'Familiar'], ['Terror', 'Misterio'], ['Romance', 'Fantasía'],
+  ['Thriller', 'Político'], ['Drama', 'Deportes'], ['Acción', 'Artes Marciales'], ['Comedia', 'Negra'],
+  ['Aventura', 'Histórico'], ['Ciencia Ficción', 'Distopía']
 ];
 
-// Generate 30 unique mock titles
-export const mockTitles: Title[] = Array.from({ length: 30 }, (_, i) => ({
-  id: String(i + 1),
-  title: MOVIE_TITLES[i],
-  type: i % 3 === 0 ? 'series' : 'movie' as 'movie' | 'series',
-  thumbnail: MOVIE_IMAGES[i],
-  banner: MOVIE_IMAGES[i],
-  year: 2022 + (i % 3),
-  rating: Number((7.0 + Math.random() * 2.5).toFixed(1)),
-  duration: i % 3 === 0 ? undefined : `${1 + Math.floor(Math.random() * 2)}h ${Math.floor(Math.random() * 50)}min`,
-  seasons: i % 3 === 0 ? 1 + (i % 4) : undefined,
-  genres: GENRES_SET[i],
-  synopsis: `Una emocionante producción que te llevará a vivir una experiencia única llena de ${GENRES_SET[i][0].toLowerCase()} y ${GENRES_SET[i][1].toLowerCase()}.`,
-}));
+// Seeded random for consistent but varied results
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+// Generate unique movies for a category
+export function generateMovies(count: number, categorySeed: string): Title[] {
+  const baseSeed = categorySeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const movies: Title[] = [];
+  const usedIndices = new Set<number>();
+  
+  for (let i = 0; i < count; i++) {
+    // Get unique image index
+    let imageIndex = Math.floor(seededRandom(baseSeed + i * 7) * MOVIE_IMAGES.length);
+    while (usedIndices.has(imageIndex) && usedIndices.size < MOVIE_IMAGES.length) {
+      imageIndex = (imageIndex + 1) % MOVIE_IMAGES.length;
+    }
+    usedIndices.add(imageIndex);
+    
+    // Get title index with variation
+    const titleIndex = Math.floor(seededRandom(baseSeed + i * 13) * MOVIE_TITLES.length);
+    const genreIndex = Math.floor(seededRandom(baseSeed + i * 17) * GENRES_SET.length);
+    
+    const isSeries = seededRandom(baseSeed + i * 23) > 0.7;
+    const year = 2020 + Math.floor(seededRandom(baseSeed + i * 29) * 5);
+    const rating = Number((6.5 + seededRandom(baseSeed + i * 31) * 3).toFixed(1));
+    
+    movies.push({
+      id: `${categorySeed}-${i}-${imageIndex}`,
+      title: MOVIE_TITLES[titleIndex],
+      type: isSeries ? 'series' : 'movie',
+      thumbnail: MOVIE_IMAGES[imageIndex],
+      banner: MOVIE_IMAGES[imageIndex],
+      year,
+      rating,
+      duration: isSeries ? undefined : `${1 + Math.floor(seededRandom(baseSeed + i * 37) * 2)}h ${Math.floor(seededRandom(baseSeed + i * 41) * 50)}min`,
+      seasons: isSeries ? 1 + Math.floor(seededRandom(baseSeed + i * 43) * 5) : undefined,
+      genres: GENRES_SET[genreIndex],
+      synopsis: `Una emocionante producción de ${year} que te llevará a vivir una experiencia única llena de ${GENRES_SET[genreIndex][0].toLowerCase()} y ${GENRES_SET[genreIndex][1].toLowerCase()}.`,
+    });
+  }
+  
+  return movies;
+}
+
+// Pre-generated category arrays with unique content
+export const trendingMovies = generateMovies(30, 'trending');
+export const recommendedMovies = generateMovies(30, 'recommended');
+export const actionMovies = generateMovies(30, 'action');
+export const dramaMovies = generateMovies(30, 'drama');
+export const comedyMovies = generateMovies(30, 'comedy');
+
+// Original mockTitles for compatibility
+export const mockTitles: Title[] = generateMovies(30, 'general');
 
 export const mockChannels: Channel[] = [
   { id: '1', name: 'Canal 1', logo: '📺', category: 'General' },
