@@ -18,16 +18,15 @@ export function MovieCard({ title, priority = false }: MovieCardProps) {
 
   return (
     <div 
-      className="relative w-[140px] sm:w-[160px] md:w-[180px] aspect-[2/3] flex-shrink-0 transition-transform duration-300 ease-out cursor-pointer group hover:scale-110 hover:z-[999]"
-      style={{ transformOrigin: 'center center' }}
+      className="relative w-[140px] sm:w-[160px] md:w-[180px] aspect-[2/3] flex-shrink-0 cursor-pointer group"
     >
       {/* Base Card */}
-      <div className="relative w-full h-full rounded-md overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:shadow-black/70 transition-shadow duration-300">
+      <div className="relative w-full h-full rounded-md overflow-hidden shadow-lg transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-black/70">
         {/* Poster Image */}
         <img 
           src={optimizedImageUrl} 
           alt={title.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading={priority ? "eager" : "lazy"}
           width={500}
           height={750}
