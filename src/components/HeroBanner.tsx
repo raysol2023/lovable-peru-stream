@@ -140,8 +140,8 @@ export function HeroBanner({ title }: HeroBannerProps) {
       </div>
 
       {/* Immersive Gradient Overlays */}
-      {/* Bottom to top fade - blends with content below */}
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
+      {/* Bottom to top fade - stronger at bottom for thumbnail visibility */}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent" />
       
       {/* Left to right fade - text readability */}
       <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent" />
@@ -219,47 +219,53 @@ export function HeroBanner({ title }: HeroBannerProps) {
         </div>
       </div>
 
-      {/* Floating Thumbnails - TV360 Style */}
-      <div className="absolute right-4 sm:right-8 lg:right-12 bottom-20 sm:bottom-24 md:bottom-32 hidden sm:flex flex-col gap-3">
-        <span className="text-xs text-white/50 uppercase tracking-wider mb-1 font-medium">
-          A continuación
-        </span>
-        {upcomingItems.map((item, idx) => (
-          <button
-            key={item.id}
-            onClick={() => handleThumbnailClick(item.originalIndex)}
-            className={cn(
-              "group relative w-28 md:w-36 lg:w-44 aspect-video rounded-lg overflow-hidden transition-all duration-300",
-              "ring-2 ring-transparent hover:ring-white/50 focus:ring-white/50",
-              "transform hover:scale-105 hover:shadow-2xl hover:shadow-black/50",
-              idx === 0 && "ring-primary/50"
-            )}
-          >
-            <img
-              src={item.cover_image_url}
-              alt={item.title}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-            {/* Thumbnail overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            
-            {/* Thumbnail title */}
-            <div className="absolute bottom-0 left-0 right-0 p-2">
-              <p className="text-[10px] md:text-xs text-white font-medium truncate">
-                {item.title}
-              </p>
-            </div>
-
-            {/* Play indicator on hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Play className="w-4 h-4 text-white fill-current" />
+      {/* Floating Thumbnails - Horizontal Bottom Right (TV360/Netflix Style) */}
+      <div className="absolute bottom-12 right-6 sm:right-8 lg:right-12 z-30 hidden sm:block">
+        {/* Label aligned right */}
+        <p className="text-xs font-bold text-gray-300 mb-2 uppercase tracking-widest text-right">
+          A Continuación
+        </p>
+        
+        {/* Horizontal thumbnail row */}
+        <div className="flex flex-row gap-4 items-end">
+          {upcomingItems.map((item, idx) => (
+            <button
+              key={item.id}
+              onClick={() => handleThumbnailClick(item.originalIndex)}
+              className={cn(
+                "group relative w-40 h-24 md:w-48 md:h-28 rounded-lg overflow-hidden transition-all duration-300",
+                "focus:outline-none focus:ring-2 focus:ring-white",
+                idx === 0 
+                  ? "border-2 border-white opacity-100 scale-105 shadow-2xl shadow-black/60" 
+                  : "border-0 opacity-60 hover:opacity-100 hover:scale-105"
+              )}
+            >
+              <img
+                src={item.cover_image_url}
+                alt={item.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+              {/* Thumbnail overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              
+              {/* Thumbnail title */}
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <p className="text-[10px] md:text-xs text-white font-medium truncate">
+                  {item.title}
+                </p>
               </div>
-            </div>
-          </button>
-        ))}
+
+              {/* Play indicator on hover */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Play className="w-5 h-5 text-white fill-current" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Progress Indicators */}
